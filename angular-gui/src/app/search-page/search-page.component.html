@@ -1,0 +1,18 @@
+<form [formGroup]="searchForm" (ngSubmit)="onSubmit($event)">
+  <station-select
+    [stations]="allStations"
+    [control]="$any(searchForm.get('from'))"
+  ></station-select>
+  <station-select
+    [stations]="allStations"
+    [control]="$any(searchForm.get('to'))"
+  ></station-select>
+  <input
+    type="datetime-local"
+    formControlName="departureDateTime"
+  />
+  <button type="submit" [disabled]="!searchForm.valid" i18n>🔍</button>
+</form>
+
+<div>{{searchForm.value | json}}</div>
+<p>Form Status: {{ searchForm.status }}</p>

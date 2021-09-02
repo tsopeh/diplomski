@@ -1,0 +1,31 @@
+@import "../../utils";
+
+:host {
+
+  form{
+    @include phone {
+      @include vertical;
+      & > * {
+        flex: 1 1 auto;
+      }
+    }
+
+    @include tablet {
+      @include vertical;
+      & > * {
+        flex: 1 1 auto;
+      }
+    }
+
+    @include desktop {
+      @include horizontal;
+    }
+
+    padding: 1rem;
+    background-color: lightgoldenrodyellow;
+    border-radius: 1rem;
+
+  }
+
+
+}

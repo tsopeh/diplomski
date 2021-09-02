@@ -1,0 +1,7 @@
+<select
+  *ngIf="control != null"
+  [formControl]="control"
+>
+  <option *ngIf="control.value == null">Select a station</option>
+  <option *ngFor="let station of stations; trackBy: trackBy" [value]="station.id">{{station.name}}</option>
+</select>
