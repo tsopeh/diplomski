@@ -4,14 +4,14 @@ import {
   ScheduleEntryBrief,
   ScheduleEntryId,
   ScheduleEntryState,
-  Station,
+  Station, StationId,
   TrainId,
   TrainType,
 } from './models'
 
 export interface GetScheduleEntriesInput {
-  from: string
-  to: string
+  from: StationId
+  to: StationId
   departureDateTime: string
 }
 

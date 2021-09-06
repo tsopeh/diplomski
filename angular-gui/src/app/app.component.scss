@@ -1,0 +1,29 @@
+@import "../utils";
+
+$header-height: 16rem;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+
+  header {
+    flex: 0 0 auto;
+    height: 3rem;
+    background-color: cornflowerblue;
+    @include center;
+
+    .logo {
+      width: 2rem;
+      height: 2rem;
+      background-color: white;
+      border-radius: 100%;
+    }
+  }
+
+  footer {
+    flex: 1 0 16rem;
+    background-color: darkslategrey;
+    color: white;
+  }
+}

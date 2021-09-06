@@ -1,6 +1,15 @@
+<a [routerLink]="'../'" class="header">
+  <div class="back-icon">🔍</div>
+  <div class="info">{{headerInfo.from}}->{{headerInfo.to}} : {{headerInfo.departureDateTime}}</div>
+</a>
+
 <div class="entries">
   <ng-container *ngIf="entries != null">
-    <div *ngFor="let entry of entries">
+    <div
+      *ngFor="let entry of entries"
+      class="entry"
+    >
+      {{entry.departureDateTime}}
     </div>
   </ng-container>
 </div>

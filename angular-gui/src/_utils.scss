@@ -34,3 +34,9 @@ $desktop-width: 1024px;
     margin-top: $gap;
   }
 }
+
+@mixin center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

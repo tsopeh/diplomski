@@ -6,7 +6,13 @@ import { takeUntil } from 'rxjs/operators'
 import { ScheduleApiService, Station, StationId } from '../api'
 import { createStorageKey, LocalStorageService } from '../local-storage.service'
 
-export interface SearchStorageModel {
+export interface SearchModel {
+  from: StationId
+  to: StationId
+  departureDateTime: string
+}
+
+interface SearchStorageModel {
   from: StationId | null
   to: StationId | null
   departureDateTime: string | null

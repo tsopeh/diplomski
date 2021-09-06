@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { ScheduleApiService, ScheduleEntryBrief } from '../api'
+import { ScheduleApiService, ScheduleEntryBrief, StationId } from '../api'
+import { SearchModel } from '../search-page/search-page.component'
 
 @Component({
   selector: 'app-result-page',
@@ -9,6 +10,7 @@ import { ScheduleApiService, ScheduleEntryBrief } from '../api'
 })
 export class ResultPageComponent implements OnInit {
 
+  public headerInfo!: SearchModel
   public entries: ReadonlyArray<ScheduleEntryBrief> | null = null
 
   constructor (
@@ -19,13 +21,16 @@ export class ResultPageComponent implements OnInit {
 
   ngOnInit (): void {
     const params = this.route.snapshot.queryParamMap
-    const from = params.get('from')!
-    const to = params.get('to')!
+    const from = params.get('from')! as StationId
+    const to = params.get('to')! as StationId
     const departureDateTime = params.get('t')!
+
     this.api.getSchedule({ from, to, departureDateTime })
       .then((entries) => {
-
+        this.entries = entries
       })
+
+    this.headerInfo = { from, to, departureDateTime }
   }
 
 }
