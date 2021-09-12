@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnDestroy, OnInit } from '@angular/core'
 import { FormBuilder, Validators } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import { Subject } from 'rxjs'
-import { takeUntil } from 'rxjs/operators'
+import { take, takeUntil } from 'rxjs/operators'
 import { ScheduleApiService, Station, StationId } from '../api'
 import { createStorageKey, LocalStorageService } from '../local-storage.service'
 
@@ -34,7 +34,7 @@ const validateModel =
   templateUrl: './search-page.component.html',
   styleUrls: ['./search-page.component.scss'],
 })
-export class SearchPageComponent implements OnInit {
+export class SearchPageComponent implements OnInit, OnDestroy {
 
   public allStations: ReadonlyArray<Station> = []
 
@@ -56,7 +56,12 @@ export class SearchPageComponent implements OnInit {
   }
 
   public ngOnInit (): void {
-    this.api.getAllStations().then((stations) => {
+    this.api.getAllStations()
+      .pipe(
+        take(1),
+        takeUntil(this.destroyed$)
+      )
+      .subscribe((stations) => {
       this.allStations = stations
       const { from, to, departureDateTime } = this.storage.get(
         SEARCH_MODEL_STORAGE_KEY,
@@ -96,6 +101,11 @@ export class SearchPageComponent implements OnInit {
         t: departureDateTime,
       },
     })
+  }
+
+  public ngOnDestroy (): void {
+    this.destroyed$.next()
+    this.destroyed$.complete()
   }
 
 }

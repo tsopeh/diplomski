@@ -22,7 +22,7 @@ $desktop-width: 1024px;
 
 @mixin horizontal($gap: 1rem) {
   display: flex;
-  * + * {
+  > * + * {
     margin-left: $gap;
   }
 }
@@ -30,7 +30,7 @@ $desktop-width: 1024px;
 @mixin vertical($gap: 1rem) {
   display: flex;
   flex-direction: column;
-  * + * {
+  > * + * {
     margin-top: $gap;
   }
 }

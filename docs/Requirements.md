@@ -8,12 +8,10 @@
 
 - Select **from** station
 - Select **to** station
-- Select **date and time**. Departure or togethoer with arrival time.
+- Select **date and time**. Departure or together with arrival time.
 - Show search **schedule** button
 
 ### Search results
-
-#### Brief
 
 - General important notices related to the selected route.
 - List of available trains. Where each entry must contain:
@@ -25,7 +23,7 @@
   - important notice related to this specific entry
   - ability to pin.
 
-#### Full
+#### Schedule entry
 
 ### Pinned
 

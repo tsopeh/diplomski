@@ -11,14 +11,14 @@
 
     @include phone {
       @include vertical;
-      & > * {
+      > * {
         flex: 1 1 auto;
       }
     }
 
     @include tablet {
       @include vertical;
-      & > * {
+      > * {
         flex: 1 1 auto;
       }
     }
