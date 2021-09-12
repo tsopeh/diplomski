@@ -1,5 +1,5 @@
 const protocol: string = 'http'
-const hostname: string = 'localhost'
+const hostname: string = window.location.hostname
 const port: number = 8080
 
 export function createUrl (pathname: string): string {

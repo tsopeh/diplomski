@@ -1,16 +1,14 @@
 @import "../utils";
+@import "../colors";
 
 $header-height: 16rem;
 
 :host {
-  display: flex;
-  flex-direction: column;
   min-height: 100%;
 
   header {
-    flex: 0 0 auto;
     height: 3rem;
-    background-color: cornflowerblue;
+    background-color: $blue;
     @include center;
 
     .logo {
@@ -21,8 +19,21 @@ $header-height: 16rem;
     }
   }
 
+  main {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    min-height: 60%;
+    width: auto;
+
+    @include desktop {
+      max-width: 30rem;
+    }
+
+  }
+
   footer {
-    flex: 1 0 16rem;
+    height: 16rem;
     background-color: darkslategrey;
     color: white;
   }

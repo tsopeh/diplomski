@@ -16,7 +16,6 @@
 - General important notices related to the selected route.
 - List of available trains. Where each entry must contain:
   - train number
-  - is it direct  
   - departure and arrival time (length) and current latency
   - train type with available classes
   - starting price

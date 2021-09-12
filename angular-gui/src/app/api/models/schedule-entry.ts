@@ -1,4 +1,4 @@
-import { Station } from './station'
+import { Station, StationId } from './station'
 import { Train } from './train'
 
 export type ScheduleEntryId = string & { __SCHEDULE_ENTRY_ID__: undefined }
@@ -12,11 +12,14 @@ export enum ScheduleEntryState {
 
 export interface ScheduleEntryBrief {
   id: ScheduleEntryId
+  departureStation: StationId
+  arrivalStation: StationId
   state: ScheduleEntryState
   train: Train
   notice: string | null
   departureDateTime: string
   arrivalDateTime: string
+  startingPrice: number
   latency: number | null
 }
 

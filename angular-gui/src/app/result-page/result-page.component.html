@@ -7,24 +7,57 @@
     </div>
     <div class="info">
       <div class="route">
-        <span>{{headerInfo.from}}</span>
+        <span>{{getStationName(departureStationId)}}</span>
         <!-- @formatter:off  -->
         <svg class="arrow" version="1.1" xmlns="http://www.w3.org/2000/svg"  x="0px" y="0px" viewBox="0 0 476.213 476.213" xml:space="preserve"> <polygon points="405.606,167.5 384.394,188.713 418.787,223.106 0,223.106 0,253.106 418.787,253.106 384.394,287.5 405.606,308.713 476.213,238.106 "/> </svg>
         <!-- @formatter:on -->
-        <span>{{headerInfo.to}}</span>
+        <span>{{getStationName(arrivalStationId)}}</span>
       </div>
-      <div class="date">{{ headerInfo.departureDateTime | date:'fullDate' }}</div>
+      <div class="date">{{ departureDateTime | date:'fullDate' }}</div>
     </div>
   </a>
 </div>
 
 <div class="entries">
-  <ng-container *ngIf="entries != null">
-    <div
+  <ng-container *ngIf="entries != null && entries.length > 0; else noEntriesFound">
+    <a
       *ngFor="let entry of entries"
       class="entry"
     >
-      {{entry.departureDateTime}}
-    </div>
+
+      <div class="timeline">
+
+        <div class="dep-time">
+          {{entry.departureDateTime | date: 'shortTime'}}
+        </div>
+        <div class="dep-name">
+          {{getStationName(entry.departureStation)}}
+        </div>
+
+        <div class="length">({{getLength(entry)}})</div>
+
+        <div class="arr-time">
+          {{entry.arrivalDateTime | date: 'shortTime'}}
+        </div>
+        <div class="arr-name">
+          {{getStationName(entry.arrivalStation)}}
+        </div>
+
+        <div class="pin dep-pin"></div>
+        <div class="pipe"></div>
+        <div class="pin arr-pin"></div>
+
+      </div>
+
+      <div class="train-info">
+        <div><span i18n>Train:</span> {{entry.train.trainNumber}}</div>
+        <div><span i18n>Starting price:</span> {{entry.startingPrice}}</div>
+        <div><span i18n>Late:</span> {{entry.latency}}</div>
+      </div>
+
+    </a>
   </ng-container>
 </div>
+
+
+<ng-template #noEntriesFound>No entries found.</ng-template>

@@ -1,8 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import differenceInMilliseconds from 'date-fns/differenceInMilliseconds'
+import intervalToDuration from 'date-fns/intervalToDuration'
 import { forkJoin, Subject } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
-import { ScheduleApiService, ScheduleEntryBrief, StationId } from '../api'
+import {
+  ScheduleApiService,
+  ScheduleEntryBrief,
+  Station,
+  StationId,
+} from '../api'
 
 @Component({
   selector: 'app-result-page',
@@ -11,15 +18,11 @@ import { ScheduleApiService, ScheduleEntryBrief, StationId } from '../api'
 })
 export class ResultPageComponent implements OnInit, OnDestroy {
 
-  public headerInfo: {
-    from: string
-    to: string
-    departureDateTime: string
-  } = {
-    from: '',
-    to: '',
-    departureDateTime: '',
-  }
+  private stations: ReadonlyArray<Station> = []
+
+  public departureStationId: StationId = '' as StationId
+  public arrivalStationId: StationId = '' as StationId
+  public departureDateTime: Date = new Date()
 
   public entries: ReadonlyArray<ScheduleEntryBrief> | null = null
 
@@ -33,23 +36,21 @@ export class ResultPageComponent implements OnInit, OnDestroy {
 
   ngOnInit (): void {
     const params = this.route.snapshot.queryParamMap
-    const from = params.get('from')! as StationId
-    const to = params.get('to')! as StationId
-    const departureDateTime = params.get('t')!
+    this.departureStationId = params.get('from')! as StationId
+    this.arrivalStationId = params.get('to')! as StationId
+    this.departureDateTime = new Date(params.get('t')!)
 
     forkJoin([
       this.api.getAllStations(),
-      this.api.getSchedule({ from, to, departureDateTime }),
+      this.api.getSchedule({
+        from: this.departureStationId,
+        to: this.arrivalStationId,
+        departureDateTime: this.departureDateTime.toISOString(),
+      }),
     ]).pipe(
       takeUntil(this.destroyed$),
     ).subscribe(([stations, entries]) => {
-      const fromStationName = stations.find(station => station.id == from)?.name ?? 'N/A'
-      const toStationName = stations.find(station => station.id == to)?.name ?? 'N/A'
-      this.headerInfo = {
-        from: fromStationName,
-        to: toStationName,
-        departureDateTime,
-      }
+      this.stations = stations
       this.entries = entries
     })
   }
@@ -59,4 +60,21 @@ export class ResultPageComponent implements OnInit, OnDestroy {
     this.destroyed$.complete()
   }
 
+  public getStationName (id: StationId): string {
+    return this.stations.find(station => station.id == id)?.name ?? 'asd'
+  }
+
+  public getLength (entry: ScheduleEntryBrief): string {
+    const diff = differenceInMilliseconds(
+      new Date(entry.arrivalDateTime),
+      new Date(entry.departureDateTime),
+    )
+    const { hours = 0, minutes = 0 } = intervalToDuration({
+      start: 0,
+      end: diff,
+    })
+    const hoursPrefix = hours < 10 ? '0' : ''
+    const minutesPrefix = minutes < 10 ? '0' : ''
+    return `${hoursPrefix}${hours}:${minutesPrefix}${minutes}`
+  }
 }

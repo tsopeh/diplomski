@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
+import addHours from 'date-fns/addHours'
 import { Observable } from 'rxjs'
 import { repeat } from '../utls'
 import {
@@ -35,11 +36,14 @@ export class ScheduleApiService {
     return new Promise((resolve, reject) => {
       const entry: ScheduleEntryBrief = {
         id: 1 as any as ScheduleEntryId,
+        departureStation: '12551' as StationId,
+        arrivalStation: '16052' as StationId,
         departureDateTime: new Date().toISOString(),
-        arrivalDateTime: new Date().toISOString(),
+        arrivalDateTime: addHours(new Date(), 3).toISOString(),
         latency: null,
         notice: null,
         state: ScheduleEntryState.Planned,
+        startingPrice: 800,
         train: {
           id: 1 as any as TrainId,
           trainNumber: 1,

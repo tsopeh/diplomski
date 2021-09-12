@@ -1,19 +1,21 @@
 @import "../../utils";
+@import "../../colors";
 
 $header-height: 4rem;
 
 :host {
   display: flex;
   flex-direction: column;
-  min-height: 90vh;
 
   .header {
     display: flex;
     position: sticky;
-    top: 0px;
+    top: 0;
     height: $header-height;
     padding: 0.5rem;
-    background-color: lightblue;
+    background-color: $blue;
+    border-bottom-left-radius: 1.8rem;
+    border-bottom-right-radius: 1.8rem;
 
     > * {
       user-select: none;
@@ -23,17 +25,18 @@ $header-height: 4rem;
       flex: 1 1 auto;
       display: flex;
       color: black;
-      text-decoration: none; /* no underline */
-      background-color: aliceblue;
+      text-decoration: none;
+      background-color: #ffffff;
       border-radius: 2rem;
+      cursor: pointer;
 
       .icon-container {
         flex-shrink: 0;
         @include center;
 
         .icon {
-          width: $header-height / 3;
-          height: $header-height / 3;
+          width: $header-height * 0.333;
+          height: $header-height * 0.333;
           margin-left: 1rem;
           margin-right: 1rem;
         }
@@ -51,7 +54,7 @@ $header-height: 4rem;
           font-size: 0.9rem;
 
           .arrow {
-           width: 2rem;
+            width: 2rem;
           }
         }
 
@@ -69,10 +72,93 @@ $header-height: 4rem;
     margin: 1rem;
 
     .entry {
-      @include center;
-      height: 15rem;
-      border: 1px solid cornflowerblue;
-      border-radius: 1.5rem;;
+      @include horizontal(0.5rem);
+      height: 10rem;
+      padding: 1rem;
+      border-radius: 1rem;
+      box-shadow: rgba(0, 0, 0, 0.16) 0 1pt 4pt, rgba(0, 0, 0, 0.08) 0 2pt 8pt;
+      cursor: pointer;
+
+      .timeline {
+        width: 10rem;
+        display: grid;
+        grid-auto-rows: 1fr;
+        grid-template-areas:
+          "dep-time dep-pin dep-name"
+          "length   pipe    .       "
+          "arr-time arr-pin arr-name";
+        justify-content: center;
+        align-items: center;
+        column-gap: 0.5rem;
+
+        $pipeColor: #5b8ce3;
+        $pipe-width: 0.3rem;
+
+        .pin {
+          align-self: center;
+          justify-self: center;
+          border-radius: 100%;
+
+          &.dep-pin {
+            grid-area: dep-pin;
+            width: 0.8rem;
+            height: 0.8rem;
+            background-color: $pipeColor;
+          }
+
+          &.arr-pin {
+            grid-area: arr-pin;
+            width: 0;
+            height: 0;
+            border-left: 0.5rem solid transparent;
+            border-right: 0.5rem solid transparent;
+            background-color: transparent;
+            border-top: 1rem solid $pipeColor;
+          }
+        }
+
+        .pipe {
+          grid-area: pipe;
+          width: $pipe-width;
+          height: 100%;
+          justify-self: center;
+          align-self: center;
+          background-color: $pipeColor;
+          box-shadow: 0px -1rem 0px 0px $pipeColor, 0px 1rem 0px 0px $pipeColor;
+        }
+
+        .dep-time {
+          grid-area: dep-time;
+        }
+
+        .dep-name {
+          grid-area: dep-name;
+        }
+
+        .arr-time {
+          grid-area: arr-time;
+        }
+
+        .arr-name {
+          grid-area: arr-name;
+        }
+
+        .length {
+          grid-area: length;
+          color: #778899;
+          font-size: 0.8rem;
+        }
+
+      }
+
+      .train-info {
+        flex: 1 0 auto;
+        @include vertical(0.5rem);
+        padding: 0.5rem;
+        font-size: 0.9rem;
+        border-left: 1px solid lightgray;
+      }
+
     }
 
   }
