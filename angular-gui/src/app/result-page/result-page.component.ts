@@ -66,15 +66,24 @@ export class ResultPageComponent implements OnInit, OnDestroy {
 
   public getLength (entry: ScheduleEntryBrief): string {
     const diff = differenceInMilliseconds(
-      new Date(entry.arrivalDateTime),
-      new Date(entry.departureDateTime),
+      new Date(entry.arrival.dateTime),
+      new Date(entry.departure.dateTime),
     )
-    const { hours = 0, minutes = 0 } = intervalToDuration({
-      start: 0,
-      end: diff,
-    })
-    const hoursPrefix = hours < 10 ? '0' : ''
-    const minutesPrefix = minutes < 10 ? '0' : ''
-    return `${hoursPrefix}${hours}:${minutesPrefix}${minutes}`
+    return formatDurationAsHoursAndMinutes(diff)
   }
+
+  public getLatency (latencyMs: number): string {
+    return formatDurationAsHoursAndMinutes(latencyMs)
+  }
+
+}
+
+function formatDurationAsHoursAndMinutes (durationMs: number): string {
+  const { hours = 0, minutes = 0 } = intervalToDuration({
+    start: 0,
+    end: durationMs,
+  })
+  const hoursPrefix = hours < 10 ? '0' : ''
+  const minutesPrefix = minutes < 10 ? '0' : ''
+  return `${hoursPrefix}${hours}:${minutesPrefix}${minutes}`
 }

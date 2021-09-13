@@ -28,19 +28,19 @@
       <div class="timeline">
 
         <div class="dep-time">
-          {{entry.departureDateTime | date: 'shortTime'}}
+          {{entry.departure.dateTime | date: 'shortTime'}}
         </div>
         <div class="dep-name">
-          {{getStationName(entry.departureStation)}}
+          {{getStationName(entry.departure.id)}}
         </div>
 
         <div class="length">({{getLength(entry)}})</div>
 
         <div class="arr-time">
-          {{entry.arrivalDateTime | date: 'shortTime'}}
+          {{entry.arrival.dateTime | date: 'shortTime'}}
         </div>
         <div class="arr-name">
-          {{getStationName(entry.arrivalStation)}}
+          {{getStationName(entry.arrival.id)}}
         </div>
 
         <div class="pin dep-pin"></div>
@@ -51,8 +51,8 @@
 
       <div class="train-info">
         <div><span i18n>Train:</span> {{entry.train.trainNumber}}</div>
-        <div><span i18n>Starting price:</span> {{entry.startingPrice}}</div>
-        <div><span i18n>Late:</span> {{entry.latency}}</div>
+        <div><span i18n>Starting price:</span> {{entry.ticketStartingPrice}}</div>
+        <div><span i18n>Late:</span> {{getLatency(entry.latency)}}</div>
       </div>
 
     </a>
@@ -60,4 +60,6 @@
 </div>
 
 
-<ng-template #noEntriesFound>No entries found.</ng-template>
+<ng-template #noEntriesFound>
+  <div i18n>No entries found.</div>
+</ng-template>

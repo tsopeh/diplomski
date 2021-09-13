@@ -1,0 +1,1 @@
+deno run --watch --allow-net ./src/index.ts

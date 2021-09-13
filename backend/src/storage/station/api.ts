@@ -1,16 +1,16 @@
-import { data } from "./data.ts";
-import { Model } from "./model.ts";
+import { stationsMockData } from "./data.ts";
+import { Station, StationId } from "./model.ts";
 
-export class Api {
-  async getAll(): Promise<ReadonlyArray<Model>> {
+export class StationsApi {
+  async getAll(): Promise<Map<StationId, Station>> {
     return await new Promise((resolve) => {
-      resolve(data);
+      resolve(stationsMockData);
     });
   }
 
-  async get(id: string): Promise<Model | null> {
+  async get(id: StationId): Promise<Station | null> {
     return await new Promise((resolve) => {
-      resolve(data.find((model) => model.id == id) ?? null);
+      resolve(stationsMockData.get(id) ?? null);
     });
   }
 }
