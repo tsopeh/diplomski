@@ -1,5 +1,5 @@
 <select
-  *ngIf="control != null"
+  *loadingUntil="control != null"
   [formControl]="control"
 >
   <option *ngIf="control.value == null">Select a station</option>

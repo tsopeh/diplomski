@@ -1,0 +1,23 @@
+<ng-container *loadingUntil="schedule != null">
+  <div>Train: {{schedule.train.trainNumber}} [{{schedule.train.type}}] ({{schedule.ticketStartingPrice}} RSD)</div>
+
+
+  <table class="stations">
+    <th i18n>Station</th>
+    <th i18n>Arrival</th>
+    <th i18n>Departure</th>
+    <tbody>
+      <ng-container *ngFor="let station of schedule.stations">
+        <tr>
+          <td class="name">{{station.name}}</td>
+          <td class="dateTime">{{station.arrivalDateTime | date: 'shortTime'}}</td>
+          <td class="dateTime">{{station.departureDateTime | date: 'shortTime'}}</td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+
+
+</ng-container>
+
+

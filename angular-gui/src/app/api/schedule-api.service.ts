@@ -1,7 +1,13 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { Observable } from 'rxjs'
-import { ScheduleEntryBrief, Station, StationId } from './models'
+import {
+  ScheduleEntryBrief,
+  ScheduleEntryFull,
+  ScheduleEntryId,
+  Station,
+  StationId,
+} from './models'
 import { createUrl } from './server'
 
 export interface GetScheduleEntriesInput {
@@ -22,8 +28,12 @@ export class ScheduleApiService {
     return this.http.get<ReadonlyArray<Station>>(createUrl(`stations`))
   }
 
-  public getSchedule (params: GetScheduleEntriesInput): Observable<ReadonlyArray<ScheduleEntryBrief>> {
+  public getBriefSchedules (params: GetScheduleEntriesInput): Observable<ReadonlyArray<ScheduleEntryBrief>> {
     return this.http.get<ReadonlyArray<ScheduleEntryBrief>>(createUrl(`schedule`))
+  }
+
+  public getFullSchedule (id: ScheduleEntryId): Observable<ScheduleEntryFull> {
+    return this.http.get<ScheduleEntryFull>(createUrl(`schedule/${id}`))
   }
 
 }

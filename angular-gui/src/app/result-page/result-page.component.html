@@ -9,7 +9,7 @@
       <div class="route">
         <span>{{getStationName(departureStationId)}}</span>
         <!-- @formatter:off  -->
-        <svg class="arrow" version="1.1" xmlns="http://www.w3.org/2000/svg"  x="0px" y="0px" viewBox="0 0 476.213 476.213" xml:space="preserve"> <polygon points="405.606,167.5 384.394,188.713 418.787,223.106 0,223.106 0,253.106 418.787,253.106 384.394,287.5 405.606,308.713 476.213,238.106 "/> </svg>
+        <svg class="arrow" version="1.1" xmlns="http://www.w3.org/2000/svg"  x="0px" y="0px" viewBox="0 0 268.832 268.832" style="enable-background:new 0 0 268.832 268.832;" xml:space="preserve"> <g> <path d="M265.171,125.577l-80-80c-4.881-4.881-12.797-4.881-17.678,0c-4.882,4.882-4.882,12.796,0,17.678l58.661,58.661H12.5 c-6.903,0-12.5,5.597-12.5,12.5c0,6.902,5.597,12.5,12.5,12.5h213.654l-58.659,58.661c-4.882,4.882-4.882,12.796,0,17.678 c2.44,2.439,5.64,3.661,8.839,3.661s6.398-1.222,8.839-3.661l79.998-80C270.053,138.373,270.053,130.459,265.171,125.577z"/> </g> </svg>
         <!-- @formatter:on -->
         <span>{{getStationName(arrivalStationId)}}</span>
       </div>
@@ -19,43 +19,47 @@
 </div>
 
 <div class="entries">
-  <ng-container *ngIf="entries != null && entries.length > 0; else noEntriesFound">
-    <a
-      *ngFor="let entry of entries"
-      class="entry"
-    >
+  <ng-container *loadingUntil="entries != null">
+    <ng-container *ngIf="entries.length > 0; else noEntriesFound">
+      <a
+        *ngFor="let entry of entries"
+        class="entry"
+        queryParamsHandling="preserve"
+        [routerLink]="['', { outlets: { drawer: ['schedule', entry.id] } }]"
+      >
 
-      <div class="timeline">
+        <div class="timeline">
 
-        <div class="dep-time">
-          {{entry.departure.dateTime | date: 'shortTime'}}
+          <div class="dep-time">
+            {{entry.departure.dateTime | date: 'shortTime'}}
+          </div>
+          <div class="dep-name">
+            {{getStationName(entry.departure.id)}}
+          </div>
+
+          <div class="length">({{getLength(entry)}})</div>
+
+          <div class="arr-time">
+            {{entry.arrival.dateTime | date: 'shortTime'}}
+          </div>
+          <div class="arr-name">
+            {{getStationName(entry.arrival.id)}}
+          </div>
+
+          <div class="pin dep-pin"></div>
+          <div class="pipe"></div>
+          <div class="pin arr-pin"></div>
+
         </div>
-        <div class="dep-name">
-          {{getStationName(entry.departure.id)}}
+
+        <div class="train-info">
+          <div><span i18n>Train:</span> {{entry.train.trainNumber}}</div>
+          <div><span i18n>Starting price:</span> {{entry.ticketStartingPrice}}</div>
+          <div><span i18n>Late:</span> {{getLatency(entry.latency)}}</div>
         </div>
 
-        <div class="length">({{getLength(entry)}})</div>
-
-        <div class="arr-time">
-          {{entry.arrival.dateTime | date: 'shortTime'}}
-        </div>
-        <div class="arr-name">
-          {{getStationName(entry.arrival.id)}}
-        </div>
-
-        <div class="pin dep-pin"></div>
-        <div class="pipe"></div>
-        <div class="pin arr-pin"></div>
-
-      </div>
-
-      <div class="train-info">
-        <div><span i18n>Train:</span> {{entry.train.trainNumber}}</div>
-        <div><span i18n>Starting price:</span> {{entry.ticketStartingPrice}}</div>
-        <div><span i18n>Late:</span> {{getLatency(entry.latency)}}</div>
-      </div>
-
-    </a>
+      </a>
+    </ng-container>
   </ng-container>
 </div>
 

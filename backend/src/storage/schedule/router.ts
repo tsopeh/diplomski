@@ -1,5 +1,6 @@
 import { Oak } from "../../deps.ts";
 import { ScheduleApi } from "./api.ts";
+import { ScheduleId } from "./model.ts";
 
 const scheduleApi = new ScheduleApi();
 
@@ -10,9 +11,11 @@ scheduleRouter
     await next();
     ctx.response.body = await scheduleApi.getAllBrief();
   })
-  .get("/full", async (ctx, next) => {
+  .get("/:id", async (ctx, next) => {
     await next();
-    ctx.response.body = await scheduleApi.getAllFull();
+    console.log();
+    const scheduleId = ctx.params.id as ScheduleId;
+    ctx.response.body = await scheduleApi.getFull(scheduleId);
   });
 
 export { scheduleRouter };

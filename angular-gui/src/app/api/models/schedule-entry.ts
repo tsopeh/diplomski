@@ -11,3 +11,18 @@ export interface ScheduleEntryBrief {
   departure: Station & { dateTime: string }
   arrival: Station & { dateTime: string }
 }
+
+export interface ScheduleEntryFull {
+  id: ScheduleEntryId;
+  train: {
+    id: number; // TODO: TrainId
+    trainNumber: string; // TODO: number
+    type: 'regional' | 'local';
+  };
+  latency: number;
+  ticketStartingPrice: number;
+  stations: Array<Station & {
+    arrivalDateTime: string; // Date
+    departureDateTime: string; // Date
+  }>;
+}

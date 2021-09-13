@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
 import { ResultPageComponent } from './result-page/result-page.component'
+import { SchedulePageComponent } from './schedule-page/schedule-page.component'
 import { SearchPageComponent } from './search-page/search-page.component'
 
 const routes: Routes = [
@@ -16,7 +17,8 @@ const routes: Routes = [
   {
     outlet: 'drawer',
     path: 'schedule/:id',
-    component: SearchPageComponent,
+    component: SchedulePageComponent,
+    data: { animation: 'PAGE' },
   },
   {
     path: '**',

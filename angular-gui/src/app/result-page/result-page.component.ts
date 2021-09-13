@@ -18,7 +18,7 @@ import {
 })
 export class ResultPageComponent implements OnInit, OnDestroy {
 
-  private stations: ReadonlyArray<Station> = []
+  private stations: ReadonlyArray<Station> | null = null
 
   public departureStationId: StationId = '' as StationId
   public arrivalStationId: StationId = '' as StationId
@@ -42,7 +42,7 @@ export class ResultPageComponent implements OnInit, OnDestroy {
 
     forkJoin([
       this.api.getAllStations(),
-      this.api.getSchedule({
+      this.api.getBriefSchedules({
         from: this.departureStationId,
         to: this.arrivalStationId,
         departureDateTime: this.departureDateTime.toISOString(),
@@ -61,7 +61,7 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   }
 
   public getStationName (id: StationId): string {
-    return this.stations.find(station => station.id == id)?.name ?? 'asd'
+    return this.stations?.find(station => station.id == id)?.name ?? 'N/A'
   }
 
   public getLength (entry: ScheduleEntryBrief): string {

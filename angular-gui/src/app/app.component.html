@@ -1,7 +1,7 @@
 <header>
   <a
     class="logo"
-    href="/"
+    [routerLink]="'/'"
   >
   </a>
 </header>
@@ -10,7 +10,10 @@
   <router-outlet></router-outlet>
 </main>
 
-<router-outlet name="drawer"></router-outlet>
+<div class="drawer" [@slideInOut]="prepareRoute(outlet)">
+  <div class="fake-underlay" (click)="closeDrawer()"></div>
+  <router-outlet #outlet="outlet" name="drawer"></router-outlet>
+</div>
 
 <footer>
   Сва права резервисана | Србија Воз а.д. | Развој: Сектор за ИТ | Администрација: Центар за медије

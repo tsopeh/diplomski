@@ -8,9 +8,9 @@ export class ScheduleApi {
     });
   }
 
-  public getAllFull(): Promise<Array<ScheduleFull>> {
+  public getFull(id: ScheduleId): Promise<ScheduleFull> {
     return new Promise((resolve) => {
-      resolve([scheduleFullMockData]);
+      resolve(scheduleFullMockData);
     });
   }
 }

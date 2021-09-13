@@ -7,16 +7,21 @@ $header-height: 16rem;
   min-height: 100%;
 
   header {
-    height: 3rem;
+    height: 3.5rem;
     background-color: $blue;
     @include center;
 
     .logo {
-      width: 2rem;
-      height: 2rem;
-      background-color: white;
+      width: 2.5rem;
+      height: 2.5rem;
+      background-color: #ffffff;
       border-radius: 100%;
+      background-image: url("../assets/srbija-voz-logo.jpg");
+      background-repeat: no-repeat;
+      background-size: contain;
+      border: 0.3rem solid #ffffff;
     }
+
   }
 
   main {
@@ -28,6 +33,37 @@ $header-height: 16rem;
 
     @include desktop {
       max-width: 30rem;
+    }
+
+  }
+
+  $drawerContentWidth: min(calc(100% - #{3rem}), #{30rem});
+
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+
+    .fake-underlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: calc(100% - #{$drawerContentWidth});
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+
+    ::ng-deep router-outlet + * {
+      position: absolute;
+      top: 0;
+      right: 0;
+      min-height: 100%;
+      width: $drawerContentWidth;
+      background-color: #ffffff;
+      box-shadow: 0 -0.2rem 1rem rgb(0 0 0 / 60%);
     }
 
   }

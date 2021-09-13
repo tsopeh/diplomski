@@ -7,12 +7,17 @@ $header-height: 4rem;
   display: flex;
   flex-direction: column;
 
+  a {
+    color: black;
+    text-decoration: none;
+  }
+
   .header {
     display: flex;
     position: sticky;
     top: 0;
     height: $header-height;
-    padding: 0.5rem;
+    padding: 0 0.5rem 0.5rem 0.5rem;
     background-color: $blue;
     border-bottom-left-radius: 1.8rem;
     border-bottom-right-radius: 1.8rem;
@@ -22,7 +27,7 @@ $header-height: 4rem;
     }
 
     a {
-      flex: 1 1 auto;
+      flex: 1 0 auto;
       display: flex;
       color: black;
       text-decoration: none;
@@ -54,7 +59,7 @@ $header-height: 4rem;
           font-size: 0.9rem;
 
           .arrow {
-            width: 2rem;
+            width: 1rem;
           }
         }
 

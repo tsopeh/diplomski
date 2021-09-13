@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core'
 import { FormBuilder, Validators } from '@angular/forms'
-import { ActivatedRoute, Router } from '@angular/router'
+import { Router } from '@angular/router'
 import { Subject } from 'rxjs'
 import { take, takeUntil } from 'rxjs/operators'
 import { ScheduleApiService, Station, StationId } from '../api'
@@ -51,7 +51,6 @@ export class SearchPageComponent implements OnInit, OnDestroy {
     private readonly storage: LocalStorageService<SearchStorageModel>,
     private readonly api: ScheduleApiService,
     private readonly router: Router,
-    private readonly route: ActivatedRoute,
   ) {
   }
 
@@ -59,42 +58,41 @@ export class SearchPageComponent implements OnInit, OnDestroy {
     this.api.getAllStations()
       .pipe(
         take(1),
-        takeUntil(this.destroyed$)
+        takeUntil(this.destroyed$),
       )
       .subscribe((stations) => {
-      this.allStations = stations
-      const { from, to, departureDateTime } = this.storage.get(
-        SEARCH_MODEL_STORAGE_KEY,
-        validateModel,
-        () => ({
-          from: null,
-          to: null,
-          departureDateTime: null,
-        }),
-      )
-
-      this.searchForm.setValue({ from, to, departureDateTime })
-
-      // Subscribe to changes after setting initial form value.
-      this.searchForm.valueChanges
-        .pipe(
-          takeUntil(this.destroyed$),
+        this.allStations = stations
+        const { from, to, departureDateTime } = this.storage.get(
+          SEARCH_MODEL_STORAGE_KEY,
+          validateModel,
+          () => ({
+            from: null,
+            to: null,
+            departureDateTime: null,
+          }),
         )
-        .subscribe(({ from, to, departureDateTime }) => {
-          this.storage.set(SEARCH_MODEL_STORAGE_KEY, {
-            from,
-            to,
-            departureDateTime,
-          })
-        })
 
-    })
+        this.searchForm.setValue({ from, to, departureDateTime })
+
+        // Subscribe to changes after setting initial form value.
+        this.searchForm.valueChanges
+          .pipe(
+            takeUntil(this.destroyed$),
+          )
+          .subscribe(({ from, to, departureDateTime }) => {
+            this.storage.set(SEARCH_MODEL_STORAGE_KEY, {
+              from,
+              to,
+              departureDateTime,
+            })
+          })
+
+      })
   }
 
   public onSubmit (event: Event): void {
     const { to, from, departureDateTime } = this.searchForm.value
-    this.router.navigate(['search'], {
-      relativeTo: this.route.parent,
+    this.router.navigate(['/search'], {
       queryParams: {
         from: from,
         to: to,
