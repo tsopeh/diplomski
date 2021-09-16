@@ -1,0 +1,12 @@
+@import "../utils";
+
+.search-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .form {
+    width: 30rem;
+    @include horizontal(1rem);
+  }
+}

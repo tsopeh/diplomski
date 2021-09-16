@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "webpack serve"
+    "dev": "webpack serve --port 4201"
   },
   "devDependencies": {
     "css-loader": "^6.2.0",
