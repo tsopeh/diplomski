@@ -3,30 +3,46 @@ import { Elm } from './Main.elm'
 import './styles.scss'
 
 const TOKEN_KEY = 'TOKEN_KEY'
+const SEARCH_FORM_KEY = 'SEARCH_FORM_KEY'
 
-const readStorage = () => {
-  return localStorage.getItem(TOKEN_KEY) ?? null
+let flags
+
+try {
+  flags = {
+    token: localStorage.getItem(TOKEN_KEY),
+    searchForm: JSON.parse(localStorage.getItem(SEARCH_FORM_KEY) ?? 'null'),
+  }
+} catch (err) {
+  flags = {}
 }
 
-const app = Elm.Main.init({ flags: readStorage() })
+const app = Elm.Main.init({ flags })
 
-const onTokenChange = () => {
-  app.ports.tokenChanged.send(readStorage())
-}
-
-app.ports.persistToken.subscribe((token: string | null) => {
-  if (token == null) {
-    localStorage.removeItem(TOKEN_KEY)
-  } else {
-    localStorage.setItem(TOKEN_KEY, token)
-  }
-  setTimeout(() => {
-    onTokenChange()
-  }, 0)
-})
-
-window.addEventListener('storage', function (event) {
-  if (event.storageArea == localStorage && event.key == TOKEN_KEY) {
-    onTokenChange()
+app.ports.persistSearchForm.subscribe((formModel: any) => {
+  try {
+    localStorage.setItem(SEARCH_FORM_KEY, JSON.stringify(formModel))
+  } catch (err) {
+    console.error(`Could not serialize the form model.`)
   }
 })
+
+// const onTokenChange = () => {
+//   app.ports.tokenChanged.send(readStorage())
+// }
+//
+// app.ports.persistToken.subscribe((token: string | null) => {
+//   if (token == null) {
+//     localStorage.removeItem(TOKEN_KEY)
+//   } else {
+//     localStorage.setItem(TOKEN_KEY, token)
+//   }
+//   setTimeout(() => {
+//     onTokenChange()
+//   }, 0)
+// })
+//
+// window.addEventListener('storage', function (event) {
+//   if (event.storageArea == localStorage && event.key == TOKEN_KEY) {
+//     onTokenChange()
+//   }
+// })

@@ -1,15 +1,17 @@
 module SearchSelect exposing (..)
 
 import Html exposing (Html, div, input, text)
-import Html.Attributes exposing (classList, title, value)
+import Html.Attributes exposing (class, classList, title, value)
 import Html.Events exposing (onClick, onFocus, onInput)
+import Utils exposing (find, viewIf)
 
 
 type alias Model =
     { search : String
     , options : List Option
-    , shouldShowOptions : Bool
-    , selectedOption : Maybe Option
+    , selectedOption : Maybe String
+    , isFocused : Bool
+    , placeholder : String
     }
 
 
@@ -25,7 +27,7 @@ type alias Option =
 
 type Msg
     = SearchChanged String
-    | SelectedOptionChanged Option
+    | SelectedOptionChanged String
     | FocusSearchSelect
     | BlurSearchSelect
 
@@ -40,10 +42,18 @@ update msg model =
         SearchChanged newSearch ->
             ( { model | search = newSearch }, Cmd.none )
 
-        SelectedOptionChanged option ->
+        SelectedOptionChanged id ->
             let
+                ( selected, search ) =
+                    case find .id id model.options of
+                        Nothing ->
+                            ( Nothing, model.placeholder )
+
+                        Just option ->
+                            ( Just option.id, option.value )
+
                 updatedModel =
-                    { model | selectedOption = Just option, search = Debug.log "ad" option.value }
+                    { model | selectedOption = selected, search = search }
 
                 ( afterBlurModel, cmd ) =
                     update BlurSearchSelect updatedModel
@@ -51,19 +61,10 @@ update msg model =
             ( afterBlurModel, cmd )
 
         FocusSearchSelect ->
-            ( { model | search = "", shouldShowOptions = True }, Cmd.none )
+            ( { model | search = "", isFocused = True }, Cmd.none )
 
         BlurSearchSelect ->
-            let
-                search =
-                    case Debug.log "model.selectedOption" model.selectedOption of
-                        Nothing ->
-                            ""
-
-                        Just option ->
-                            option.value
-            in
-            ( { model | search = search, shouldShowOptions = False }, Cmd.none )
+            ( { model | isFocused = False }, Cmd.none )
 
 
 
@@ -73,34 +74,60 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
+        visibleOptions : List Option
         visibleOptions =
             List.filter
                 (\op ->
                     String.contains (String.toLower model.search) (String.toLower op.value)
                 )
                 model.options
+
+        search =
+            case model.isFocused of
+                True ->
+                    model.search
+
+                False ->
+                    case model.selectedOption of
+                        Nothing ->
+                            model.placeholder
+
+                        Just id ->
+                            let
+                                found =
+                                    find .id id model.options
+                            in
+                            case found of
+                                Just option ->
+                                    option.value
+
+                                -- This should never happen in practice.
+                                Nothing ->
+                                    model.placeholder
     in
-    div [ classList [ ( "search-select", True ), ( "onTop", model.shouldShowOptions ) ] ]
-        [ div
-            [ classList [ ( "underlay", True ), ( "hidden", not model.shouldShowOptions ) ]
-            , onClick BlurSearchSelect
-            ]
-            []
+    div [ classList [ ( "search-select", True ), ( "onTop", model.isFocused ) ] ]
+        [ viewIf model.isFocused <|
+            div
+                [ class "underlay"
+                , onClick BlurSearchSelect
+                ]
+                []
         , input
-            [ value model.search
+            [ value search
             , onInput SearchChanged
             , onFocus FocusSearchSelect
             ]
             []
-        , div [ classList [ ( "options", True ), ( "hidden", not model.shouldShowOptions ) ] ] <|
-            List.map
-                (\op ->
-                    div
-                        [ classList [ ( "option", True ) ]
-                        , onClick (SelectedOptionChanged op)
-                        , title op.value
-                        ]
-                        [ text op.value ]
-                )
-                visibleOptions
+        , viewIf model.isFocused <|
+            div [ class "options" ] <|
+                List.map
+                    (\op ->
+                        div
+                            [ classList [ ( "option", True ) ]
+                            , onClick (SelectedOptionChanged op.id)
+                            , title op.value
+                            ]
+                            [ text op.value ]
+                    )
+                    visibleOptions
         ]

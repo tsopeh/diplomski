@@ -1,10 +1,14 @@
 module Main exposing (..)
 
-import Api exposing (Viewer(..))
+import Api exposing (Token, Viewer(..))
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (div, text)
+import Html
+import Page
 import Page.Search as Search
+import Ports exposing (Flags)
+import Task
+import Time
 import Url
 
 
@@ -14,7 +18,20 @@ import Url
 
 type Model
     = Search Search.Model
-    | Results Viewer
+
+
+toViewer : Model -> Viewer
+toViewer model =
+    case model of
+        Search searchModel ->
+            Search.toViewer searchModel
+
+
+updateViewer : Model -> Viewer -> Model
+updateViewer model viewer =
+    case model of
+        Search searchModel ->
+            Search <| Search.updateViewer searchModel viewer
 
 
 
@@ -24,12 +41,28 @@ type Model
 type Msg
     = UrlRequested Browser.UrlRequest
     | UrlChanged Url.Url
+    | GotToken String
+    | GotHereZone Time.Zone
+    | GotFromPage (Page.Msg Msg)
     | GotSearchMsg Search.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
+        ( GotHereZone zone, _ ) ->
+            let
+                viewer =
+                    toViewer model
+
+                updated =
+                    updateViewer model <| Api.updateZone viewer zone
+            in
+            ( updated, Cmd.none )
+
+        ( GotFromPage (Page.GotFromContent contentMsg), _ ) ->
+            update contentMsg model
+
         ( GotSearchMsg searchMsg, Search searchModel ) ->
             let
                 ( updatedModel, cmd ) =
@@ -57,38 +90,54 @@ view model =
                 Search searchModel ->
                     Html.map GotSearchMsg <| Search.view searchModel
 
-                _ ->
-                    text "TODO"
+        body =
+            List.map (Html.map GotFromPage) (Page.view content)
     in
     { title = "Title"
-    , body = [ div [] [ content ] ]
+    , body = body
     }
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Ports.tokenChanged GotToken
+        ]
 
 
 
 -- MAIN
 
 
-init : flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         viewer : Viewer
         viewer =
-            Anon key
+            Anon { navKey = key, timeZone = Time.utc }
 
         ( searchModel, searchCmd ) =
-            Search.init viewer
+            Search.init flags viewer
     in
-    ( Search searchModel, Cmd.map GotSearchMsg searchCmd )
+    ( Search searchModel
+    , Cmd.batch
+        [ Task.perform GotHereZone Time.here
+        , Cmd.map GotSearchMsg searchCmd
+        ]
+    )
 
 
-main : Program (Maybe String) Model Msg
+main : Program Flags Model Msg
 main =
     Browser.application
         { init = init
         , view = view
         , update = update
-        , subscriptions = \model -> Sub.none
+        , subscriptions = subscriptions
         , onUrlRequest = UrlRequested
         , onUrlChange = UrlChanged
         }
