@@ -25,8 +25,8 @@ type Status a
     | Failed
 
 
-delay : Int -> msg -> Cmd msg
-delay time msg =
+delayMsg : Int -> msg -> Cmd msg
+delayMsg time msg =
     Process.sleep (toFloat time)
         |> Task.andThen (always <| Task.succeed msg)
         |> Task.perform identity

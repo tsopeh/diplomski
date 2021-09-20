@@ -1,6 +1,6 @@
 module Page.Search exposing (..)
 
-import Api exposing (Viewer, createRequestHeaders, handleJsonResponse, viewerToZone)
+import Api exposing (Viewer, viewerToZone)
 import Html exposing (Html, button, div, form, input, text)
 import Html.Attributes exposing (class, type_, value)
 import Html.Events exposing (onInput, onSubmit)
@@ -9,8 +9,10 @@ import Iso8601
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
-import Ports exposing (Flags)
+import Ports
+import Route exposing (navTo)
 import SearchSelect
+import Station exposing (Station, getAllStations)
 import Task exposing (Task)
 import Time
 import Utils exposing (Status(..), posixToIsoDate)
@@ -56,6 +58,7 @@ type Msg
     | Submit
     | GotStations (Result Http.Error (List Station))
     | GotNowTime Time.Posix
+    | GotFormFromStorage JE.Value
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -93,7 +96,32 @@ update msg model =
             )
 
         Submit ->
-            ( model, Ports.persistSearchForm <| encodeForm model.formModel )
+            let
+                departureId =
+                    case model.formModel.departureSearchSelect.selectedOption of
+                        Nothing ->
+                            "N/A"
+
+                        Just id ->
+                            id
+
+                arrivalId =
+                    case model.formModel.arrivalSearchSelect.selectedOption of
+                        Nothing ->
+                            "N/A"
+
+                        Just id ->
+                            id
+
+                dateTime =
+                    Time.posixToMillis model.formModel.departureDateTime
+            in
+            ( model
+            , Cmd.batch
+                [ Ports.persistSearchForm <| encodeForm model.formModel
+                , Route.navTo model.viewer (Route.Result departureId arrivalId dateTime)
+                ]
+            )
 
         GotStations result ->
             case result of
@@ -139,6 +167,26 @@ update msg model =
                 False ->
                     ( model, Cmd.none )
 
+        GotFormFromStorage raw ->
+            let
+                updatedModel =
+                    case JD.decodeValue formStorageModelDecoder raw of
+                        Ok formStorageModel ->
+                            let
+                                newFormModel =
+                                    updateFormModelWithFormPersistenceModel model.formModel formStorageModel
+                            in
+                            ( { model | formModel = newFormModel }, Cmd.none )
+
+                        Err err ->
+                            let
+                                e =
+                                    Debug.log "err" err
+                            in
+                            ( model, Cmd.none )
+            in
+            updatedModel
+
 
 
 -- View
@@ -181,52 +229,19 @@ viewDateTime msg zone posix =
     input [ type_ "date", class "date-input", onInput msgStringToPosix, value <| posixToIsoDate zone posix ] []
 
 
-type alias Station =
-    { id : String
-    , name : String
-    }
-
-
-getAllStations : Viewer -> Task Http.Error (List Station)
-getAllStations viewer =
-    Http.task
-        { method = "GET"
-        , url = "http://localhost:8080/stations"
-        , headers = createRequestHeaders viewer
-        , body = Http.emptyBody
-        , timeout = Nothing
-        , resolver =
-            Http.stringResolver <|
-                handleJsonResponse <|
-                    JD.list
-                        (JD.succeed Station
-                            |> JDP.required "id" JD.string
-                            |> JDP.required "name" JD.string
-                        )
-        }
-
-
 
 -- INIT
 
 
-init : Flags -> Viewer -> ( Model, Cmd Msg )
-init flags viewer =
-    let
-        initFormModel =
-            case JD.decodeValue (JD.field "searchForm" formModelDecoder) flags of
-                Ok formModel ->
-                    formModel
-
-                Err _ ->
-                    initForm
-    in
+init : Viewer -> ( Model, Cmd Msg )
+init viewer =
     ( { viewer = viewer
       , stations = Loading
-      , formModel = initFormModel
+      , formModel = initForm
       }
     , Cmd.batch
         [ Task.perform GotNowTime Time.now
+        , Ports.requestSearchFormFromStorage ()
         , Task.attempt GotStations (getAllStations viewer)
         ]
     )
@@ -274,32 +289,31 @@ encodeForm formModel =
         ]
 
 
-type alias FormPersistenceModel =
+type alias FormStorageModel =
     { departureStationId : Maybe String
     , arrivalStationId : Maybe String
     , departureDateTime : Int
     }
 
 
-formModelDecoder : JD.Decoder FormModel
-formModelDecoder =
-    JD.succeed FormPersistenceModel
+formStorageModelDecoder : JD.Decoder FormStorageModel
+formStorageModelDecoder =
+    JD.succeed FormStorageModel
         |> JDP.optional "departureStationId" (JD.map Just JD.string) Nothing
         |> JDP.optional "arrivalStationId" (JD.map Just JD.string) Nothing
         |> JDP.required "departureDateTime" JD.int
-        |> JD.map formPersistenceModelToFormModel
 
 
-formPersistenceModelToFormModel : FormPersistenceModel -> FormModel
-formPersistenceModelToFormModel formPersistenceModel =
+updateFormModelWithFormPersistenceModel : FormModel -> FormStorageModel -> FormModel
+updateFormModelWithFormPersistenceModel formModel formPersistenceModel =
     let
         departureSearchSelect =
-            initForm.departureSearchSelect
+            formModel.departureSearchSelect
 
         arrivalSearchSelect =
-            initForm.arrivalSearchSelect
+            formModel.arrivalSearchSelect
     in
-    { initForm
+    { formModel
         | departureSearchSelect = { departureSearchSelect | selectedOption = formPersistenceModel.departureStationId }
         , arrivalSearchSelect = { arrivalSearchSelect | selectedOption = formPersistenceModel.arrivalStationId }
         , departureDateTime = Time.millisToPosix formPersistenceModel.departureDateTime

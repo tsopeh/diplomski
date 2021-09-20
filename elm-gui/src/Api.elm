@@ -37,6 +37,16 @@ updateZone viewer zone =
             Admin { state | timeZone = zone } token
 
 
+toNavKey : Viewer -> Nav.Key
+toNavKey viewer =
+    case viewer of
+        Anon state ->
+            state.navKey
+
+        Admin state _ ->
+            state.navKey
+
+
 type Token
     = String Token
 

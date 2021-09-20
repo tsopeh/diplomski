@@ -2,7 +2,8 @@ module SearchSelect exposing (..)
 
 import Html exposing (Html, div, input, text)
 import Html.Attributes exposing (class, classList, title, value)
-import Html.Events exposing (onClick, onFocus, onInput)
+import Html.Events exposing (onBlur, onFocus, onInput, onMouseDown)
+import String.Normalize exposing (removeDiacritics)
 import Utils exposing (find, viewIf)
 
 
@@ -54,11 +55,8 @@ update msg model =
 
                 updatedModel =
                     { model | selectedOption = selected, search = search }
-
-                ( afterBlurModel, cmd ) =
-                    update BlurSearchSelect updatedModel
             in
-            ( afterBlurModel, cmd )
+            ( updatedModel, Cmd.none )
 
         FocusSearchSelect ->
             ( { model | search = "", isFocused = True }, Cmd.none )
@@ -74,11 +72,14 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
+        normalizeString str =
+            str |> String.toLower |> removeDiacritics
+
         visibleOptions : List Option
         visibleOptions =
             List.filter
                 (\op ->
-                    String.contains (String.toLower model.search) (String.toLower op.value)
+                    String.contains (normalizeString model.search) (normalizeString op.value)
                 )
                 model.options
 
@@ -106,16 +107,12 @@ view model =
                                     model.placeholder
     in
     div [ classList [ ( "search-select", True ), ( "onTop", model.isFocused ) ] ]
-        [ viewIf model.isFocused <|
-            div
-                [ class "underlay"
-                , onClick BlurSearchSelect
-                ]
-                []
+        [ viewIf model.isFocused <| div [ class "underlay" ] []
         , input
             [ value search
             , onInput SearchChanged
             , onFocus FocusSearchSelect
+            , onBlur BlurSearchSelect
             ]
             []
         , viewIf model.isFocused <|
@@ -124,7 +121,7 @@ view model =
                     (\op ->
                         div
                             [ classList [ ( "option", True ) ]
-                            , onClick (SelectedOptionChanged op.id)
+                            , onMouseDown (SelectedOptionChanged op.id)
                             , title op.value
                             ]
                             [ text op.value ]

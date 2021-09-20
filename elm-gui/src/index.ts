@@ -26,6 +26,16 @@ app.ports.persistSearchForm.subscribe((formModel: any) => {
   }
 })
 
+app.ports.requestSearchFormFromStorage.subscribe(() => {
+  let formModel = null
+  try {
+    formModel = JSON.parse(localStorage.getItem(SEARCH_FORM_KEY)!)
+  } catch (err) {
+    console.error(`Could not de-serialize the form model.`)
+  }
+  app.ports.receiveSearchFormFromStorage.send(formModel)
+})
+
 // const onTokenChange = () => {
 //   app.ports.tokenChanged.send(readStorage())
 // }
