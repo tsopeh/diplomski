@@ -1,0 +1,7 @@
+$primary-background-color: #2c6bd6;
+$primary-text-color: #ffffff;
+
+@mixin primaryContainer() {
+  background-color: $primary-background-color;
+  color: $primary-text-color;
+}

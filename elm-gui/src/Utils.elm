@@ -13,6 +13,11 @@ posixToIsoDate zone posix =
     DateFormat.format "yyyy-MM-dd" zone posix
 
 
+posixToHoursMinutes : Time.Zone -> Time.Posix -> String
+posixToHoursMinutes zone posix =
+    DateFormat.format "hh:mm" zone posix
+
+
 posixToIsoDateTime : Time.Zone -> Time.Posix -> String
 posixToIsoDateTime zone posix =
     -- The format is "yyyy-MM-ddThh:mm" followed by optional ":ss" or ":ss.SSS".

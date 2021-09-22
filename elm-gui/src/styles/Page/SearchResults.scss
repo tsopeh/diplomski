@@ -1,9 +1,9 @@
-@import "../../utils";
-@import "../../colors";
+@import "../colors";
+@import "../utils";
 
 $header-height: 4rem;
 
-:host {
+.search-results-page {
   display: flex;
   flex-direction: column;
 
@@ -18,7 +18,7 @@ $header-height: 4rem;
     top: 0;
     height: $header-height;
     padding: 0.5rem 0.5rem 0.5rem 0.5rem;
-    background-color: $blue;
+    background-color: $primary-background-color;
     border-bottom-left-radius: 1.8rem;
     border-bottom-right-radius: 1.8rem;
 
@@ -39,7 +39,7 @@ $header-height: 4rem;
         flex-shrink: 0;
         @include center;
 
-        .icon {
+        .search-icon {
           width: $header-height * 0.333;
           height: $header-height * 0.333;
           margin-left: 1rem;
@@ -71,7 +71,7 @@ $header-height: 4rem;
 
   }
 
-  .entries {
+  .schedules {
     flex: 1 1 auto;
     @include vertical;
     margin: 1rem;

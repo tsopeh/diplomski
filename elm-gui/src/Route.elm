@@ -2,32 +2,39 @@ module Route exposing (..)
 
 import Api exposing (Viewer)
 import Browser.Navigation as Nav
+import Schedule exposing (ScheduleId)
+import Station exposing (StationId)
 import Url
 import Url.Builder as UrlBuilder
 import Url.Parser as UrlParser exposing ((</>))
 
 
 type Route
-    = Search
-    | Result String String Int
+    = Home
+    | SearchResults StationId StationId Int
+    | Schedule ScheduleId
 
 
 parser : UrlParser.Parser (Route -> a) a
 parser =
     UrlParser.oneOf
-        [ UrlParser.map Search UrlParser.top
-        , UrlParser.map Result (UrlParser.s "search" </> UrlParser.string </> UrlParser.string </> UrlParser.int)
+        [ UrlParser.map Home UrlParser.top
+        , UrlParser.map SearchResults (UrlParser.s "search" </> (UrlParser.string |> UrlParser.map Station.stringToId) </> (UrlParser.string |> UrlParser.map Station.stringToId) </> UrlParser.int)
+        , UrlParser.map Schedule (UrlParser.s "schedule" </> (UrlParser.string |> UrlParser.map Schedule.stringToId))
         ]
 
 
 routeToString : Route -> String
 routeToString route =
     case route of
-        Search ->
+        Home ->
             "/"
 
-        Result departureId arrivalId dateTime ->
-            UrlBuilder.relative [ "search", departureId, arrivalId, String.fromInt dateTime ] []
+        SearchResults departureId arrivalId dateTime ->
+            UrlBuilder.absolute [ "search", Station.idToString departureId, Station.idToString arrivalId, String.fromInt dateTime ] []
+
+        Schedule id ->
+            UrlBuilder.absolute [ "schedule", Schedule.idToString id ] []
 
 
 fromUrl : Url.Url -> Maybe Route

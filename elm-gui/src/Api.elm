@@ -17,8 +17,8 @@ type Viewer
     | Admin CommonState Token
 
 
-viewerToZone : Viewer -> Time.Zone
-viewerToZone viewer =
+toZone : Viewer -> Time.Zone
+toZone viewer =
     case viewer of
         Anon state ->
             state.timeZone

@@ -1,6 +1,8 @@
 module Page exposing (..)
 
-import Html exposing (Html, footer, header, text)
+import Html exposing (Html, a, div, footer, header, text)
+import Html.Attributes exposing (class, href)
+import Route
 
 
 type Msg msg
@@ -9,12 +11,12 @@ type Msg msg
 
 view : Html msg -> List (Html (Msg msg))
 view content =
-    viewHeader :: Html.map GotFromContent content :: [ viewFooter ]
+    viewHeader :: div [ class "page" ] [ Html.map GotFromContent content ] :: [ viewFooter ]
 
 
 viewHeader : Html (Msg msg)
 viewHeader =
-    header [] [ text "header" ]
+    header [] [ a [ class "logo", href (Route.routeToString Route.Home) ] [] ]
 
 
 viewFooter : Html (Msg msg)

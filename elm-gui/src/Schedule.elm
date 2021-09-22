@@ -1,4 +1,4 @@
-module Schedule exposing (..)
+module Schedule exposing (ScheduleBrief, ScheduleFull, ScheduleId, getBriefSchedules, getFullSchedule, idToString, stringToId)
 
 import Api exposing (Viewer)
 import Http
@@ -11,22 +11,82 @@ import Time
 import Train
 
 
+type ScheduleId
+    = ScheduleId String
+
+
+stringToId : String -> ScheduleId
+stringToId =
+    ScheduleId
+
+
+idToString : ScheduleId -> String
+idToString (ScheduleId str) =
+    str
+
+
 type alias ScheduleFull =
-    { id : String
+    { id : ScheduleId
     , train : Train.Model
     , latency : Int
     , ticketStartingPrice : Float
-    , timeTable :
-        List
-            { station : Station
-            , departureDateTime : Time.Posix
-            , arrivalDateTime : Time.Posix
-            }
+    , timeTable : List ScheduleFullStation
     }
 
 
+scheduleFullDecoder : JD.Decoder ScheduleFull
+scheduleFullDecoder =
+    JD.succeed ScheduleFull
+        |> JDP.required "id" (JD.string |> JD.map ScheduleId)
+        |> JDP.required "train" Train.decoder
+        |> JDP.required "latency" JD.int
+        |> JDP.required "ticketStartingPrice" JD.float
+        |> JDP.required "stations" (JD.list scheduleFullStationDecoder)
+
+
+type alias ScheduleFullStation =
+    { station : Station
+    , arrivalDateTime : Time.Posix
+    , departureDateTime : Time.Posix
+    }
+
+
+type alias StationDepartureArrivalDateTimeBE =
+    { id : String, name : String, arrivalDateTime : String, departureDateTime : String }
+
+
+scheduleFullStationDecoder : JD.Decoder ScheduleFullStation
+scheduleFullStationDecoder =
+    JD.succeed StationDepartureArrivalDateTimeBE
+        |> JDP.required "id" JD.string
+        |> JDP.required "name" JD.string
+        |> JDP.required "arrivalDateTime" JD.string
+        |> JDP.required "departureDateTime" JD.string
+        |> JD.andThen
+            (\fromBe ->
+                case Iso8601.toTime fromBe.arrivalDateTime of
+                    Ok arrivalPosix ->
+                        case Iso8601.toTime fromBe.departureDateTime of
+                            Ok departurePosix ->
+                                JD.succeed
+                                    { station =
+                                        { id = Station.stringToId fromBe.id
+                                        , name = fromBe.name
+                                        }
+                                    , arrivalDateTime = arrivalPosix
+                                    , departureDateTime = departurePosix
+                                    }
+
+                            Err _ ->
+                                JD.fail "Failed to decode 'departureDateTime'."
+
+                    Err _ ->
+                        JD.fail "Failed to decode 'arrivalDateTime'."
+            )
+
+
 type alias ScheduleBrief =
-    { id : String
+    { id : ScheduleId
     , train : Train.Model
     , latency : Int
     , ticketStartingPrice : Float
@@ -35,40 +95,15 @@ type alias ScheduleBrief =
     }
 
 
-type ScheduleId
-    = ScheduleId String
-
-
-scheduleFullDecoder : JD.Decoder ScheduleFull
-scheduleFullDecoder =
-    Debug.todo "scheduleFullDecoder"
-
-
 scheduleBriefDecoder : JD.Decoder ScheduleBrief
 scheduleBriefDecoder =
     JD.succeed ScheduleBrief
-        |> JDP.required "id" JD.string
+        |> JDP.required "id" (JD.string |> JD.map ScheduleId)
         |> JDP.required "train" Train.decoder
         |> JDP.required "latency" JD.int
         |> JDP.required "ticketStartingPrice" JD.float
         |> JDP.required "departure" stationDateTimeDecoder
         |> JDP.required "arrival" stationDateTimeDecoder
-
-
-getSchedules : Viewer -> Task Http.Error (List ScheduleBrief)
-getSchedules viewer =
-    Http.task
-        { method = "GET"
-        , url = "http://localhost:8080/schedule"
-        , body = Http.emptyBody
-        , headers = Api.createRequestHeaders viewer
-        , timeout = Nothing
-        , resolver = Http.stringResolver <| Api.handleJsonResponse <| JD.list scheduleBriefDecoder
-        }
-
-
-
--- STATION DATE TIME
 
 
 type alias StationDateTime =
@@ -91,12 +126,40 @@ stationDateTimeDecoder =
                     Ok posixDate ->
                         JD.succeed
                             { station =
-                                { id = id
+                                { id = Station.stringToId id
                                 , name = name
                                 }
                             , dateTime = posixDate
                             }
 
-                    Err err ->
+                    Err _ ->
                         JD.fail "Failed to decode `StationDateTimeBE."
             )
+
+
+
+-- HTTP
+
+
+getBriefSchedules : Viewer -> Task Http.Error (List ScheduleBrief)
+getBriefSchedules viewer =
+    Http.task
+        { method = "GET"
+        , url = "http://localhost:8080/schedule"
+        , body = Http.emptyBody
+        , headers = Api.createRequestHeaders viewer
+        , timeout = Nothing
+        , resolver = Http.stringResolver <| Api.handleJsonResponse <| JD.list scheduleBriefDecoder
+        }
+
+
+getFullSchedule : Viewer -> ScheduleId -> Task Http.Error ScheduleFull
+getFullSchedule viewer id =
+    Http.task
+        { method = "GET"
+        , url = "http://localhost:8080/schedule/" ++ idToString id
+        , body = Http.emptyBody
+        , headers = Api.createRequestHeaders viewer
+        , timeout = Nothing
+        , resolver = Http.stringResolver <| Api.handleJsonResponse <| scheduleFullDecoder
+        }

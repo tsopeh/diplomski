@@ -1,6 +1,6 @@
 // @ts-ignore TODO: define custom `.d.ts` file
 import { Elm } from './Main.elm'
-import './styles.scss'
+import './styles/index.scss'
 
 const TOKEN_KEY = 'TOKEN_KEY'
 const SEARCH_FORM_KEY = 'SEARCH_FORM_KEY'

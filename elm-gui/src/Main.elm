@@ -5,8 +5,9 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Html
 import Page
-import Page.Results as Result
-import Page.Search as Search
+import Page.Home as Home
+import Page.Schedule as Schedule
+import Page.SearchResults as SearchResults
 import Ports
 import Route as Route exposing (Route)
 import Task
@@ -20,34 +21,41 @@ import Url
 
 type Model
     = Redirect Viewer
-    | Search Search.Model
-    | Result Result.Model
+    | Home Home.Model
+    | SearchResults SearchResults.Model
+    | Schedule Schedule.Model
 
 
 toViewer : Model -> Viewer
-toViewer model =
-    case model of
+toViewer mainModel =
+    case mainModel of
         Redirect viewer ->
             viewer
 
-        Search searchModel ->
-            Search.toViewer searchModel
+        Home model ->
+            Home.toViewer model
 
-        Result resultModel ->
-            Result.toViewer resultModel
+        SearchResults model ->
+            SearchResults.toViewer model
+
+        Schedule model ->
+            Schedule.toViewer model
 
 
 updateViewer : Model -> Viewer -> Model
-updateViewer model viewer =
-    case model of
+updateViewer mainModel viewer =
+    case mainModel of
         Redirect _ ->
             Redirect viewer
 
-        Search searchModel ->
-            Search <| Search.updateViewer searchModel viewer
+        Home model ->
+            Home <| Home.updateViewer model viewer
 
-        Result resultModel ->
-            Result <| Result.updateViewer resultModel viewer
+        SearchResults model ->
+            SearchResults <| SearchResults.updateViewer model viewer
+
+        Schedule model ->
+            Schedule <| Schedule.updateViewer model viewer
 
 
 
@@ -60,78 +68,89 @@ type Msg
     | GotToken String
     | GotHereZone Time.Zone
     | GotFromPage (Page.Msg Msg)
-    | GotSearchMsg Search.Msg
-    | GotResultMsg Result.Msg
+    | GotHomeMsg Home.Msg
+    | GotSearchResultsMsg SearchResults.Msg
+    | GotScheduleMsg Schedule.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case ( msg, model ) of
+update mainMsg mainModel =
+    case ( mainMsg, mainModel ) of
         ( UrlRequested urlRequest, _ ) ->
             case urlRequest of
                 Internal url ->
                     let
                         key =
-                            Api.toNavKey <| toViewer model
+                            Api.toNavKey <| toViewer mainModel
                     in
-                    ( model, Nav.pushUrl key (Url.toString url) )
+                    ( mainModel, Nav.pushUrl key (Url.toString url) )
 
                 External url ->
-                    ( model, Nav.load url )
+                    ( mainModel, Nav.load url )
 
         ( UrlChanged url, _ ) ->
-            changeModelTo (Route.fromUrl url) model
+            changeModelTo (Route.fromUrl url) mainModel
 
         ( GotHereZone zone, _ ) ->
             let
                 viewer =
-                    toViewer model
+                    toViewer mainModel
 
                 updated =
-                    updateViewer model <| Api.updateZone viewer zone
+                    updateViewer mainModel <| Api.updateZone viewer zone
             in
             ( updated, Cmd.none )
 
         ( GotFromPage (Page.GotFromContent contentMsg), _ ) ->
-            update contentMsg model
+            update contentMsg mainModel
 
-        ( GotSearchMsg searchMsg, Search searchModel ) ->
+        ( GotHomeMsg msg, Home model ) ->
             let
                 ( updatedModel, cmd ) =
-                    Search.update searchMsg searchModel
+                    Home.update msg model
             in
-            ( Search updatedModel, Cmd.map GotSearchMsg cmd )
+            ( Home updatedModel, Cmd.map GotHomeMsg cmd )
 
-        ( GotResultMsg resultMsg, Result resultModel ) ->
+        ( GotSearchResultsMsg msg, SearchResults model ) ->
             let
                 ( updatedModel, cmd ) =
-                    Result.update resultMsg resultModel
+                    SearchResults.update msg model
             in
-            ( Result updatedModel, Cmd.map GotResultMsg cmd )
+            ( SearchResults updatedModel, Cmd.map GotSearchResultsMsg cmd )
+
+        ( GotScheduleMsg msg, Schedule model ) ->
+            let
+                ( updatedModel, cmd ) =
+                    Schedule.update msg model
+            in
+            ( Schedule updatedModel, Cmd.map GotScheduleMsg cmd )
 
         ( _, _ ) ->
             let
                 _ =
-                    Debug.log "Impossible state" ( msg, model )
+                    Debug.log "Impossible state" ( mainMsg, mainModel )
             in
-            ( model, Cmd.none )
+            ( mainModel, Cmd.none )
 
 
 changeModelTo : Maybe Route -> Model -> ( Model, Cmd Msg )
-changeModelTo maybeRoute model =
+changeModelTo maybeRoute mainModel =
     let
         viewer =
-            toViewer model
+            toViewer mainModel
     in
     case maybeRoute of
         Nothing ->
-            mapInit Search GotSearchMsg <| Search.init viewer
+            ( mainModel, Route.navTo viewer Route.Home )
 
-        Just Route.Search ->
-            mapInit Search GotSearchMsg <| Search.init viewer
+        Just Route.Home ->
+            mapInit Home GotHomeMsg <| Home.init viewer
 
-        Just (Route.Result _ _ _) ->
-            mapInit Result GotResultMsg <| Result.init viewer
+        Just (Route.SearchResults depId arrId depDateTime) ->
+            mapInit SearchResults GotSearchResultsMsg <| SearchResults.init viewer depId arrId (Time.millisToPosix depDateTime)
+
+        Just (Route.Schedule scheduleId) ->
+            mapInit Schedule GotScheduleMsg <| Schedule.init viewer scheduleId
 
 
 mapInit : (subModel -> Model) -> (msg -> Msg) -> ( subModel, Cmd msg ) -> ( Model, Cmd Msg )
@@ -144,19 +163,22 @@ mapInit mapModel mapMsg ( subModel, cmd ) =
 
 
 view : Model -> Browser.Document Msg
-view model =
+view mainModel =
     let
         content : Html.Html Msg
         content =
-            case model of
+            case mainModel of
                 Redirect _ ->
                     Html.div [] [ Html.text "Redirecting..." ]
 
-                Search searchModel ->
-                    Html.map GotSearchMsg <| Search.view searchModel
+                Home model ->
+                    Html.map GotHomeMsg <| Home.view model
 
-                Result resultModel ->
-                    Html.map GotResultMsg <| Result.view resultModel
+                SearchResults model ->
+                    Html.map GotSearchResultsMsg <| SearchResults.view model
+
+                Schedule model ->
+                    Html.map GotScheduleMsg <| Schedule.view model
 
         body =
             List.map (Html.map GotFromPage) (Page.view content)
@@ -174,7 +196,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Ports.tokenChanged GotToken
-        , Sub.map GotSearchMsg (Ports.receiveSearchFormFromStorage Search.GotFormFromStorage)
+        , Sub.map GotHomeMsg (Ports.receiveSearchFormFromStorage Home.GotFormFromStorage)
         ]
 
 
