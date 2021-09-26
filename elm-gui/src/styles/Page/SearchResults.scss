@@ -1,7 +1,7 @@
 @import "../colors";
 @import "../utils";
 
-$header-height: 4rem;
+$search-header-height: 4rem;
 
 .search-results-page {
   display: flex;
@@ -16,7 +16,7 @@ $header-height: 4rem;
     display: flex;
     position: sticky;
     top: 0;
-    height: $header-height;
+    height: $search-header-height;
     padding: 0.5rem 0.5rem 0.5rem 0.5rem;
     background-color: $primary-background-color;
     border-bottom-left-radius: 1.8rem;
@@ -40,8 +40,8 @@ $header-height: 4rem;
         @include center;
 
         .search-icon {
-          width: $header-height * 0.333;
-          height: $header-height * 0.333;
+          width: $search-header-height * 0.333;
+          height: $search-header-height * 0.333;
           margin-left: 1rem;
           margin-right: 1rem;
         }

@@ -1,13 +1,14 @@
 @import "../utils";
 @import "../colors";
 
-$header-height: 16rem;
+$app-header-height: 3.5rem;
+$app-footer-height: 3.5rem;
 
 :host {
   min-height: 100%;
 
   header {
-    height: 3.5rem;
+    height: $app-header-height;
     background-color: $blue;
     @include center;
 
@@ -28,7 +29,7 @@ $header-height: 16rem;
     display: block;
     margin-left: auto;
     margin-right: auto;
-    min-height: 60%;
+    min-height: calc(100% - #{$app-header-height + $app-footer-height});
     width: auto;
 
     @include desktop {
@@ -69,7 +70,7 @@ $header-height: 16rem;
   }
 
   footer {
-    height: 16rem;
+    height: $app-footer-height;
     background-color: darkslategrey;
     color: white;
   }

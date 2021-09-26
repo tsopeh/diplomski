@@ -1,10 +1,10 @@
 module Main exposing (..)
 
 import Api exposing (Token, Viewer(..))
+import AppLayout
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Html
-import Page
 import Page.Home as Home
 import Page.Schedule as Schedule
 import Page.SearchResults as SearchResults
@@ -67,7 +67,7 @@ type Msg
     | UrlChanged Url.Url
     | GotToken String
     | GotHereZone Time.Zone
-    | GotFromPage (Page.Msg Msg)
+    | GotFromAppLayout (AppLayout.Msg Msg)
     | GotHomeMsg Home.Msg
     | GotSearchResultsMsg SearchResults.Msg
     | GotScheduleMsg Schedule.Msg
@@ -101,7 +101,7 @@ update mainMsg mainModel =
             in
             ( updated, Cmd.none )
 
-        ( GotFromPage (Page.GotFromContent contentMsg), _ ) ->
+        ( GotFromAppLayout (AppLayout.GotFromContent contentMsg), _ ) ->
             update contentMsg mainModel
 
         ( GotHomeMsg msg, Home model ) ->
@@ -181,7 +181,7 @@ view mainModel =
                     Html.map GotScheduleMsg <| Schedule.view model
 
         body =
-            List.map (Html.map GotFromPage) (Page.view content)
+            List.map (Html.map GotFromAppLayout) (AppLayout.view content)
     in
     { title = "Title"
     , body = body

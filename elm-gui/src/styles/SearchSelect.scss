@@ -26,9 +26,11 @@
   .options {
     width: 100%;
     position: absolute;
+    left: 0;
     overflow: auto;
-    max-height: 30em;
+    max-height: 15em;
     background-color: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.16) 0 1pt 4pt, rgba(0, 0, 0, 0.08) 0 2pt 8pt;
 
     .option {
       padding: 0.5em;

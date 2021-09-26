@@ -1,0 +1,65 @@
+@import "colors";
+@import "utils";
+
+html, body {
+  height: 100%;
+  overflow: auto;
+}
+
+html {
+
+  @include desktop {
+    font-size: 16px;
+  }
+
+  @include tablet {
+    font-size: 14px;
+  }
+
+  @include phone {
+    font-size: 12px;
+  }
+
+}
+
+$page-header-height: 3.5rem;
+$page-footer-height: 3.5rem;
+
+header {
+  height: $page-header-height;
+  background-color: $primary-background-color;
+  @include center;
+
+  .logo {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: #ffffff;
+    border-radius: 100%;
+    background-image: url("../assets/srbija-voz-logo.jpg");
+    background-repeat: no-repeat;
+    background-size: contain;
+    border: 0.3rem solid #ffffff;
+  }
+
+}
+
+main {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  min-height: calc(100vh - #{$page-header-height + $page-footer-height});
+  width: auto;
+
+  @include desktop {
+    max-width: 30rem;
+  }
+
+}
+
+footer {
+  height: $page-footer-height;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  @include primaryContainer;
+}

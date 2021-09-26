@@ -1,6 +1,6 @@
-module Page exposing (..)
+module AppLayout exposing (..)
 
-import Html exposing (Html, a, div, footer, header, text)
+import Html exposing (Html, a, div, footer, header, main_, text)
 import Html.Attributes exposing (class, href)
 import Route
 
@@ -11,7 +11,7 @@ type Msg msg
 
 view : Html msg -> List (Html (Msg msg))
 view content =
-    viewHeader :: div [ class "page" ] [ Html.map GotFromContent content ] :: [ viewFooter ]
+    viewHeader :: main_ [] [ Html.map GotFromContent content ] :: [ viewFooter ]
 
 
 viewHeader : Html (Msg msg)
