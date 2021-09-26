@@ -4,6 +4,12 @@ import Browser.Navigation as Nav
 import Http exposing (Header)
 import Json.Decode as Decode exposing (Decoder)
 import Time
+import Url.Builder
+
+
+getApiUrl : List String -> String
+getApiUrl params =
+    "http://localhost:8080" ++ Url.Builder.absolute params []
 
 
 type alias CommonState =

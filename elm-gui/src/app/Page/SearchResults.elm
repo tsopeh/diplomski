@@ -121,7 +121,7 @@ view model =
                 Loaded schedules ->
                     List.map
                         (\entry -> viewBrief (toZone model.viewer) entry)
-                        (List.concat (List.repeat 5 schedules))
+                        schedules
 
                 Failed ->
                     [ text "Failed to load schedules." ]
@@ -175,12 +175,18 @@ viewBrief zone entry =
 
 
 init : Viewer -> StationId -> StationId -> Time.Posix -> ( Model, Cmd Msg )
-init viewer departureStationId arrivalStationId departureDateTime =
-    ( Model viewer Loading Loading departureDateTime Loading
+init viewer depStationId arrStationId depDateTime =
+    ( Model viewer Loading Loading depDateTime Loading
     , Cmd.batch
-        [ Task.attempt GotDepartureStation <| Station.getStation viewer departureStationId
-        , Task.attempt GotArrivalStation <| Station.getStation viewer arrivalStationId
-        , Task.attempt GotSchedules (Schedule.getBriefSchedules viewer)
+        [ Task.attempt GotDepartureStation <| Station.getStation viewer depStationId
+        , Task.attempt GotArrivalStation <| Station.getStation viewer arrStationId
+        , Task.attempt GotSchedules
+            (Schedule.getBriefSchedules viewer
+                { depStationId = depStationId
+                , arrStationId = arrStationId
+                , depDateTime = depDateTime
+                }
+            )
         ]
     )
 

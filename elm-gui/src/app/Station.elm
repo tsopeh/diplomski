@@ -30,7 +30,7 @@ getAllStations : Viewer -> Task Http.Error (List Station)
 getAllStations viewer =
     Http.task
         { method = "GET"
-        , url = "http://localhost:8080/stations"
+        , url = Api.getApiUrl [ "stations" ]
         , headers = createRequestHeaders viewer
         , body = Http.emptyBody
         , timeout = Nothing
@@ -45,7 +45,7 @@ getStation : Viewer -> StationId -> Task Http.Error Station
 getStation viewer id =
     Http.task
         { method = "GET"
-        , url = "http://localhost:8080/stations/" ++ idToString id
+        , url = Api.getApiUrl [ "stations", idToString id ]
         , headers = createRequestHeaders viewer
         , body = Http.emptyBody
         , timeout = Nothing

@@ -5,7 +5,7 @@ import Http
 import Iso8601
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
-import Station exposing (Station)
+import Station exposing (Station, StationId)
 import Task exposing (Task)
 import Time
 import Train
@@ -141,11 +141,25 @@ stationDateTimeDecoder =
 -- HTTP
 
 
-getBriefSchedules : Viewer -> Task Http.Error (List ScheduleBrief)
-getBriefSchedules viewer =
+type alias GetBriefSchedulesParams =
+    { depStationId : StationId
+    , arrStationId : StationId
+    , depDateTime : Time.Posix
+    }
+
+
+getBriefSchedules : Viewer -> GetBriefSchedulesParams -> Task Http.Error (List ScheduleBrief)
+getBriefSchedules viewer { depStationId, arrStationId, depDateTime } =
     Http.task
         { method = "GET"
-        , url = "http://localhost:8080/schedule"
+        , url =
+            Api.getApiUrl
+                [ "schedules"
+                , "brief"
+                , Station.idToString depStationId
+                , Station.idToString arrStationId
+                , Iso8601.fromTime depDateTime
+                ]
         , body = Http.emptyBody
         , headers = Api.createRequestHeaders viewer
         , timeout = Nothing
@@ -157,7 +171,7 @@ getFullSchedule : Viewer -> ScheduleId -> Task Http.Error ScheduleFull
 getFullSchedule viewer id =
     Http.task
         { method = "GET"
-        , url = "http://localhost:8080/schedule/" ++ idToString id
+        , url = Api.getApiUrl [ "schedules", "full", idToString id ]
         , body = Http.emptyBody
         , headers = Api.createRequestHeaders viewer
         , timeout = Nothing
