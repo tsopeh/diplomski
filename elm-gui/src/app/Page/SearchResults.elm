@@ -134,14 +134,33 @@ view model =
 
 viewHeader : Viewer -> ( Maybe Station, Maybe Station ) -> Time.Posix -> Html Msg
 viewHeader viewer ( departure, arrival ) dateTime =
+    let
+        departureHtml : Html Msg
+        departureHtml =
+            case departure of
+                Nothing ->
+                    text "..."
+
+                Just station ->
+                    text station.name
+
+        arrivalHtml : Html Msg
+        arrivalHtml =
+            case arrival of
+                Nothing ->
+                    text "..."
+
+                Just station ->
+                    text station.name
+    in
     div [ class "header" ]
         [ a [ href "../" ]
             [ div [ class "icon-container" ] [ searchIcon ]
             , div [ class "info" ]
                 [ div [ class "route" ]
-                    [ span [] [ text "from" ]
+                    [ span [] [ departureHtml ]
                     , arrowIcon
-                    , span [] [ text "to" ]
+                    , span [] [ arrivalHtml ]
                     ]
                 , div [ class "date" ] [ text "date time" ]
                 ]
