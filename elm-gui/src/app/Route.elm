@@ -1,12 +1,12 @@
 module Route exposing (..)
 
-import Api exposing (Viewer)
 import Browser.Navigation as Nav
 import Schedule exposing (ScheduleId)
 import Station exposing (StationId)
 import Url
 import Url.Builder as UrlBuilder
 import Url.Parser as UrlParser exposing ((</>))
+import Viewer exposing (Viewer)
 
 
 type Route
@@ -44,7 +44,7 @@ fromUrl url =
 
 navTo : Viewer -> Route -> Cmd msg
 navTo viewer route =
-    Nav.pushUrl (Api.toNavKey viewer) (routeToString route)
+    Nav.pushUrl (Viewer.toNavKey viewer) (routeToString route)
 
 
 navToWithoutHistory : Nav.Key -> Route -> Cmd msg

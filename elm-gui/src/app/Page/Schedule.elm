@@ -1,12 +1,13 @@
 module Page.Schedule exposing (..)
 
-import Api exposing (Viewer, toZone)
 import Html exposing (Html, div, table, tbody, td, text, th, tr)
 import Html.Attributes exposing (class)
 import Http
+import I18n
 import Schedule exposing (ScheduleFull, ScheduleId, getFullSchedule)
 import Task
 import Utils exposing (Status(..), posixToHoursMinutes)
+import Viewer exposing (Viewer)
 
 
 
@@ -58,16 +59,19 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
+        t =
+            Viewer.toI18n model.viewer
+
         scheduleHtml : List (Html Msg)
         scheduleHtml =
             case model.schedule of
                 Loading ->
-                    [ text "Loading schedule..." ]
+                    [ text <| t I18n.LoadingSchedule ]
 
                 Loaded schedule ->
                     [ div [ class "train" ]
                         [ text <|
-                            "Train: "
+                            t I18n.Schedule_Train
                                 ++ schedule.train.trainNumber
                                 ++ " "
                                 ++ String.fromFloat schedule.ticketStartingPrice
@@ -75,16 +79,27 @@ view model =
                                 ++ "RSD"
                         ]
                     , table [ class "stations" ]
-                        [ th [] [ text "Station" ]
-                        , th [] [ text "Arrival" ]
-                        , th [] [ text "Departure" ]
+                        [ th [] [ text <| t I18n.StationName ]
+                        , th [] [ text <| t I18n.TimeOfArrival ]
+                        , th [] [ text <| t I18n.TimeOfDeparture ]
                         , tbody [] <|
                             List.map
                                 (\entry ->
                                     tr []
-                                        [ td [ class "name" ] [ text entry.station.name ]
-                                        , td [ class "dateTime" ] [ text <| posixToHoursMinutes (toZone model.viewer) entry.arrivalDateTime ]
-                                        , td [ class "dateTime" ] [ text <| posixToHoursMinutes (toZone model.viewer) entry.departureDateTime ]
+                                        [ td [ class "name" ]
+                                            [ text entry.station.name ]
+                                        , td [ class "dateTime" ]
+                                            [ text <|
+                                                posixToHoursMinutes
+                                                    (Viewer.toZone model.viewer)
+                                                    entry.arrivalDateTime
+                                            ]
+                                        , td [ class "dateTime" ]
+                                            [ text <|
+                                                posixToHoursMinutes
+                                                    (Viewer.toZone model.viewer)
+                                                    entry.departureDateTime
+                                            ]
                                         ]
                                 )
                                 schedule.timeTable
@@ -92,7 +107,7 @@ view model =
                     ]
 
                 Failed ->
-                    [ text "Failed to load schedule." ]
+                    [ text <| t I18n.FailedToLoadStations ]
     in
     div [ class "schedule-page" ] scheduleHtml
 

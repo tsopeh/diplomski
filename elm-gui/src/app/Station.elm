@@ -1,10 +1,11 @@
 module Station exposing (Station, StationId, decoder, getAllStations, getStation, idToString, stringToId)
 
-import Api exposing (Viewer, createRequestHeaders, handleJsonResponse)
+import Api exposing (createRequestHeaders, handleJsonResponse)
 import Http
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
 import Task exposing (Task)
+import Viewer exposing (Viewer)
 
 
 type StationId

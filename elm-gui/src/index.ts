@@ -2,21 +2,35 @@
 import { Elm } from './app/Main.elm'
 import './styles/index.scss'
 
+const LANGUAGE_KEY = 'LANGUAGE_KEY'
 const TOKEN_KEY = 'TOKEN_KEY'
 const SEARCH_FORM_KEY = 'SEARCH_FORM_KEY'
 
-let flags
+let flags: {
+  token: string | null
+  language: string | null
+}
 
 try {
   flags = {
-    token: localStorage.getItem(TOKEN_KEY),
-    searchForm: JSON.parse(localStorage.getItem(SEARCH_FORM_KEY) ?? 'null'),
+    token: readToken(),
+    language: readLanguage(),
   }
 } catch (err) {
-  flags = {}
+  flags = { token: null, language: null }
 }
 
-const app = Elm.Main.init({ flags })
+const app = Elm.Main.init({ flags: flags })
+
+app.ports.persistLanguage.subscribe((language: string) => {
+  try {
+    localStorage.setItem(LANGUAGE_KEY, language)
+  } catch (err) {
+    console.error(`Could not persist the language.`)
+    return
+  }
+  sendLanguageToElm()
+})
 
 app.ports.persistSearchForm.subscribe((formModel: any) => {
   try {
@@ -56,3 +70,15 @@ app.ports.requestSearchFormFromStorage.subscribe(() => {
 //     onTokenChange()
 //   }
 // })
+
+function readToken (): string | null {
+  return localStorage.getItem(TOKEN_KEY) ?? null
+}
+
+function readLanguage (): string | null {
+  return localStorage.getItem(LANGUAGE_KEY) ?? null
+}
+
+function sendLanguageToElm () {
+  app.ports.languageChanged.send(readLanguage())
+}

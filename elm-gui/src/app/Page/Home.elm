@@ -1,10 +1,10 @@
 module Page.Home exposing (..)
 
-import Api exposing (Viewer, toZone)
 import Html exposing (Html, button, div, form, input, text)
 import Html.Attributes exposing (class, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 import Http
+import I18n
 import Iso8601
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
@@ -18,6 +18,7 @@ import Svg.Attributes as SvgAttr
 import Task exposing (Task)
 import Time
 import Utils exposing (Status(..), posixToIsoDate)
+import Viewer exposing (Viewer)
 
 
 
@@ -200,9 +201,13 @@ update msg model =
 
 view : Model -> Html Msg
 view { viewer, stations, formModel } =
+    let
+        t =
+            Viewer.toI18n viewer
+    in
     case stations of
         Loading ->
-            text "Loading Stations..."
+            text <| t I18n.LoadingStations
 
         Loaded _ ->
             div [ class "home-page" ]
@@ -212,14 +217,14 @@ view { viewer, stations, formModel } =
                             SearchSelect.view formModel.departureSearchSelect
                         , Html.map GotArrivalSelectMsg <|
                             SearchSelect.view formModel.arrivalSearchSelect
-                        , viewDateTime DepartureDateTimeChanged (toZone viewer) formModel.departureDateTime
+                        , viewDateTime DepartureDateTimeChanged (Viewer.toZone viewer) formModel.departureDateTime
                         ]
                     , button [ type_ "submit" ] [ searchIcon ]
                     ]
                 ]
 
         Failed ->
-            text "Failed to load Stations!"
+            text <| t I18n.FailedToLoadStations
 
 
 viewDateTime : (Time.Posix -> Msg) -> Time.Zone -> Time.Posix -> Html Msg
@@ -245,7 +250,7 @@ init : Viewer -> ( Model, Cmd Msg )
 init viewer =
     ( { viewer = viewer
       , stations = Loading
-      , formModel = initForm
+      , formModel = initForm (Viewer.toI18n viewer)
       }
     , Cmd.batch
         [ Task.perform GotNowTime Time.now
@@ -255,21 +260,21 @@ init viewer =
     )
 
 
-initForm : FormModel
-initForm =
+initForm : I18n.TransFn -> FormModel
+initForm t =
     { departureSearchSelect =
         { search = ""
         , options = []
         , selectedOption = Nothing
         , isFocused = False
-        , placeholder = "From..."
+        , placeholder = t I18n.DepartingFrom
         }
     , arrivalSearchSelect =
         { search = ""
         , options = []
         , selectedOption = Nothing
         , isFocused = False
-        , placeholder = "To..."
+        , placeholder = t I18n.ArrivingTo
         }
     , departureDateTime = Time.millisToPosix 0
     , problems = []

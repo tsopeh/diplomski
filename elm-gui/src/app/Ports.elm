@@ -10,7 +10,17 @@ import Json.Encode as JE
 port persistToken : String -> Cmd msg
 
 
-port tokenChanged : (String -> msg) -> Sub msg
+port tokenChanged : (JE.Value -> msg) -> Sub msg
+
+
+
+-- LANGUAGE
+
+
+port persistLanguage : String -> Cmd msg
+
+
+port languageChanged : (JE.Value -> msg) -> Sub msg
 
 
 

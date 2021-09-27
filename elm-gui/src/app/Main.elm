@@ -1,10 +1,12 @@
 module Main exposing (..)
 
-import Api exposing (Token, Viewer(..))
 import AppLayout
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Html
+import I18n
+import Json.Decode as JD
+import Json.Encode as JE
 import Page.Home as Home
 import Page.Schedule as Schedule
 import Page.SearchResults as SearchResults
@@ -13,6 +15,7 @@ import Route as Route exposing (Route)
 import Task
 import Time
 import Url
+import Viewer exposing (Viewer)
 
 
 
@@ -65,7 +68,8 @@ updateViewer mainModel viewer =
 type Msg
     = UrlRequested Browser.UrlRequest
     | UrlChanged Url.Url
-    | GotToken String
+    | LanguageChanged I18n.Language
+    | GotToken (Maybe Viewer.Token)
     | GotHereZone Time.Zone
     | GotFromAppLayout (AppLayout.Msg Msg)
     | GotHomeMsg Home.Msg
@@ -81,7 +85,7 @@ update mainMsg mainModel =
                 Internal url ->
                     let
                         key =
-                            Api.toNavKey <| toViewer mainModel
+                            Viewer.toNavKey <| toViewer mainModel
                     in
                     ( mainModel, Nav.pushUrl key (Url.toString url) )
 
@@ -91,18 +95,30 @@ update mainMsg mainModel =
         ( UrlChanged url, _ ) ->
             changeModelTo (Route.fromUrl url) mainModel
 
+        ( LanguageChanged language, _ ) ->
+            let
+                updatedModel =
+                    updateViewer mainModel (Viewer.updateLanguage (toViewer mainModel) language)
+            in
+            ( updatedModel, Cmd.none )
+
         ( GotHereZone zone, _ ) ->
             let
                 viewer =
                     toViewer mainModel
 
                 updated =
-                    updateViewer mainModel <| Api.updateZone viewer zone
+                    updateViewer mainModel <| Viewer.updateZone viewer zone
             in
             ( updated, Cmd.none )
 
-        ( GotFromAppLayout (AppLayout.GotFromContent contentMsg), _ ) ->
-            update contentMsg mainModel
+        ( GotFromAppLayout msg, _ ) ->
+            case msg of
+                AppLayout.GotFromContent contentMsg ->
+                    update contentMsg mainModel
+
+                AppLayout.LanguageChanged languageStringId ->
+                    ( mainModel, Ports.persistLanguage languageStringId )
 
         ( GotHomeMsg msg, Home model ) ->
             let
@@ -181,7 +197,7 @@ view mainModel =
                     Html.map GotScheduleMsg <| Schedule.view model
 
         body =
-            List.map (Html.map GotFromAppLayout) (AppLayout.view content)
+            List.map (Html.map GotFromAppLayout) (AppLayout.view (AppLayout.init (toViewer mainModel)) content)
     in
     { title = "Title"
     , body = body
@@ -194,9 +210,25 @@ view mainModel =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    let
+        updateLang : JE.Value -> Msg
+        updateLang raw =
+            let
+                language =
+                    case JD.decodeValue I18n.languageDecoder raw of
+                        Ok lang ->
+                            lang
+
+                        _ ->
+                            I18n.Eng
+            in
+            LanguageChanged language
+    in
     Sub.batch
-        [ Ports.tokenChanged GotToken
-        , Sub.map GotHomeMsg (Ports.receiveSearchFormFromStorage Home.GotFormFromStorage)
+        [ Sub.map GotHomeMsg (Ports.receiveSearchFormFromStorage Home.GotFormFromStorage)
+        , Ports.languageChanged updateLang
+
+        -- , Ports.tokenChanged GotToken
         ]
 
 
@@ -204,12 +236,25 @@ subscriptions model =
 -- MAIN
 
 
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-init _ url key =
+init : JE.Value -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
     let
+        language : I18n.Language
+        language =
+            case JD.decodeValue (JD.field "language" I18n.languageDecoder) flags of
+                Ok lang ->
+                    lang
+
+                Err err ->
+                    let
+                        _ =
+                            Debug.log "Falling back to Eng. Failed to decode language" err
+                    in
+                    I18n.Eng
+
         viewer : Viewer
         viewer =
-            Anon { navKey = key, timeZone = Time.utc }
+            Viewer.Anon { navKey = key, timeZone = Time.utc, language = language }
 
         ( model, cmd ) =
             changeModelTo (Route.fromUrl url) <| Redirect viewer
@@ -222,7 +267,7 @@ init _ url key =
     )
 
 
-main : Program () Model Msg
+main : Program JE.Value Model Msg
 main =
     Browser.application
         { init = init

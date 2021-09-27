@@ -1,6 +1,6 @@
 module Schedule exposing (ScheduleBrief, ScheduleFull, ScheduleId, getBriefSchedules, getFullSchedule, idToString, stringToId)
 
-import Api exposing (Viewer)
+import Api
 import Http
 import Iso8601
 import Json.Decode as JD
@@ -9,6 +9,7 @@ import Station exposing (Station, StationId)
 import Task exposing (Task)
 import Time
 import Train
+import Viewer exposing (Viewer)
 
 
 type ScheduleId
