@@ -24,6 +24,11 @@ posixToIsoDateTime zone posix =
     DateFormat.format "yyyy-MM-ddThh:mm:ss" zone posix
 
 
+posixToDate : Time.Zone -> Time.Posix -> String
+posixToDate zone posix =
+    DateFormat.format "dd. MM. yyyy." zone posix
+
+
 type Status a
     = Loading
     | Loaded a
