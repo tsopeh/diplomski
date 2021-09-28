@@ -2,13 +2,13 @@ module Api exposing (..)
 
 import Http exposing (Header)
 import Json.Decode as Decode exposing (Decoder)
-import Url.Builder
+import Url.Builder exposing (QueryParameter)
 import Viewer exposing (Viewer)
 
 
-getApiUrl : List String -> String
-getApiUrl params =
-    "http://localhost:8080" ++ Url.Builder.absolute params []
+getApiUrl : List String -> List QueryParameter -> String
+getApiUrl path queryParams =
+    "http://localhost:8080" ++ Url.Builder.absolute path queryParams
 
 
 createRequestHeaders : Viewer -> List Header

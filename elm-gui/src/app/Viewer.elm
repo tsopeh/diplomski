@@ -5,7 +5,7 @@ import I18n
 import Time
 
 
-type alias CommonState =
+type alias State =
     { navKey : Nav.Key
     , timeZone : Time.Zone
     , language : I18n.Language
@@ -13,8 +13,12 @@ type alias CommonState =
 
 
 type Viewer
-    = Anon CommonState
-    | Admin CommonState Token
+    = Anon State
+    | LoggedIn State Token
+
+
+type Token
+    = Token String
 
 
 toZone : Viewer -> Time.Zone
@@ -23,7 +27,7 @@ toZone viewer =
         Anon state ->
             state.timeZone
 
-        Admin state _ ->
+        LoggedIn state _ ->
             state.timeZone
 
 
@@ -33,8 +37,8 @@ updateZone viewer zone =
         Anon state ->
             Anon { state | timeZone = zone }
 
-        Admin state token ->
-            Admin { state | timeZone = zone } token
+        LoggedIn state token ->
+            LoggedIn { state | timeZone = zone } token
 
 
 toNavKey : Viewer -> Nav.Key
@@ -43,7 +47,7 @@ toNavKey viewer =
         Anon state ->
             state.navKey
 
-        Admin state _ ->
+        LoggedIn state _ ->
             state.navKey
 
 
@@ -53,7 +57,7 @@ toLanguage viewer =
         Anon state ->
             state.language
 
-        Admin state _ ->
+        LoggedIn state _ ->
             state.language
 
 
@@ -63,14 +67,10 @@ updateLanguage viewer language =
         Anon state ->
             Anon { state | language = language }
 
-        Admin state token ->
-            Admin { state | language = language } token
+        LoggedIn state token ->
+            LoggedIn { state | language = language } token
 
 
 toI18n : Viewer -> I18n.TransFn
 toI18n viewer =
     I18n.translate <| toLanguage viewer
-
-
-type Token
-    = Token String

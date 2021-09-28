@@ -9,10 +9,10 @@ import Iso8601
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
+import Location exposing (Location, LocationId, getAllLocations)
 import Ports
 import Route
 import SearchSelect
-import Station exposing (Station, StationId, getAllStations)
 import SvgIcons exposing (searchIcon)
 import Task exposing (Task)
 import Time
@@ -26,14 +26,14 @@ import Viewer exposing (Viewer)
 
 type alias Model =
     { viewer : Viewer
-    , stations : Status (List Station)
+    , locations : Status (List Location)
     , formModel : FormModel
     }
 
 
 type alias FormModel =
-    { departureSearchSelect : SearchSelect.Model
-    , arrivalSearchSelect : SearchSelect.Model
+    { startSelect : SearchSelect.Model
+    , finishSelect : SearchSelect.Model
     , departureDateTime : Time.Posix
     , problems : List String
     }
@@ -54,11 +54,11 @@ updateViewer model viewer =
 
 
 type Msg
-    = GotDepartureSelectMsg SearchSelect.Msg
-    | GotArrivalSelectMsg SearchSelect.Msg
+    = GotStartSelectMsg SearchSelect.Msg
+    | GotFinishSelectMsg SearchSelect.Msg
     | DepartureDateTimeChanged Time.Posix
     | Submit
-    | GotStations (Result Http.Error (List Station))
+    | GotLocations (Result Http.Error (List Location))
     | GotNowTime Time.Posix
     | GotFormFromStorage JE.Value
 
@@ -66,58 +66,54 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotDepartureSelectMsg searchSelectMsg ->
+        GotStartSelectMsg selectMsg ->
             let
                 form =
                     model.formModel
 
                 ( updatedSearchModel, searchSelectCmd ) =
-                    SearchSelect.update searchSelectMsg form.departureSearchSelect
+                    SearchSelect.update selectMsg form.startSelect
             in
-            ( { model | formModel = { form | departureSearchSelect = updatedSearchModel } }, Cmd.map GotDepartureSelectMsg searchSelectCmd )
+            ( { model | formModel = { form | startSelect = updatedSearchModel } }, Cmd.map GotStartSelectMsg searchSelectCmd )
 
-        GotArrivalSelectMsg searchSelectMsg ->
+        GotFinishSelectMsg selectMsg ->
             let
                 form =
                     model.formModel
 
                 ( updatedSearchModel, searchSelectCmd ) =
-                    SearchSelect.update searchSelectMsg form.arrivalSearchSelect
+                    SearchSelect.update selectMsg form.finishSelect
             in
-            ( { model | formModel = { form | arrivalSearchSelect = updatedSearchModel } }, Cmd.map GotArrivalSelectMsg searchSelectCmd )
+            ( { model | formModel = { form | finishSelect = updatedSearchModel } }, Cmd.map GotFinishSelectMsg searchSelectCmd )
 
         DepartureDateTimeChanged change ->
             let
                 form =
                     model.formModel
             in
-            ( { model
-                | formModel = { form | departureDateTime = change }
-              }
-            , Cmd.none
-            )
+            ( { model | formModel = { form | departureDateTime = change } }, Cmd.none )
 
         Submit ->
             let
-                departureId =
-                    (case model.formModel.departureSearchSelect.selectedOption of
+                startId =
+                    (case model.formModel.startSelect.selectedOption of
                         Nothing ->
                             "N/A"
 
                         Just id ->
                             id
                     )
-                        |> Station.stringToId
+                        |> Location.stringToId
 
-                arrivalId =
-                    (case model.formModel.arrivalSearchSelect.selectedOption of
+                finishId =
+                    (case model.formModel.finishSelect.selectedOption of
                         Nothing ->
                             "N/A"
 
                         Just id ->
                             id
                     )
-                        |> Station.stringToId
+                        |> Location.stringToId
 
                 dateTime =
                     Time.posixToMillis model.formModel.departureDateTime
@@ -125,35 +121,35 @@ update msg model =
             ( model
             , Cmd.batch
                 [ Ports.persistSearchForm <| encodeForm model.formModel
-                , Route.navTo model.viewer (Route.SearchResults departureId arrivalId dateTime)
+                , Route.navTo model.viewer (Route.Suggestions startId finishId dateTime)
                 ]
             )
 
-        GotStations result ->
+        GotLocations result ->
             case result of
-                Ok stations ->
+                Ok locations ->
                     let
                         form =
                             model.formModel
 
                         departureSearchSelect =
-                            form.departureSearchSelect
+                            form.startSelect
 
                         arrivalSearchSelect =
-                            form.arrivalSearchSelect
+                            form.finishSelect
 
                         options =
-                            List.map (\s -> { id = Station.idToString s.id, value = s.name }) stations
+                            List.map (\s -> { id = Location.idToString s.id, value = s.name }) locations
                     in
                     ( { model
-                        | stations = Loaded stations
+                        | locations = Loaded locations
                         , formModel =
                             { form
-                                | departureSearchSelect =
+                                | startSelect =
                                     { departureSearchSelect
                                         | options = options
                                     }
-                                , arrivalSearchSelect =
+                                , finishSelect =
                                     { arrivalSearchSelect
                                         | options = options
                                     }
@@ -163,7 +159,7 @@ update msg model =
                     )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( { model | locations = Failed }, Cmd.none )
 
         GotNowTime time ->
             case Time.posixToMillis time > Time.posixToMillis model.formModel.departureDateTime of
@@ -199,23 +195,23 @@ update msg model =
 
 
 view : Model -> Html Msg
-view { viewer, stations, formModel } =
+view { viewer, locations, formModel } =
     let
         t =
             Viewer.toI18n viewer
     in
-    case stations of
+    case locations of
         Loading ->
-            text <| t I18n.LoadingStations
+            text <| t I18n.LoadingLocations
 
         Loaded _ ->
             div [ class "home-page" ]
                 [ form [ onSubmit Submit ]
                     [ div [ class "fields" ]
-                        [ Html.map GotDepartureSelectMsg <|
-                            SearchSelect.view formModel.departureSearchSelect
-                        , Html.map GotArrivalSelectMsg <|
-                            SearchSelect.view formModel.arrivalSearchSelect
+                        [ Html.map GotStartSelectMsg <|
+                            SearchSelect.view formModel.startSelect
+                        , Html.map GotFinishSelectMsg <|
+                            SearchSelect.view formModel.finishSelect
                         , viewDateTime DepartureDateTimeChanged (Viewer.toZone viewer) formModel.departureDateTime
                         ]
                     , button [ type_ "submit" ] [ searchIcon ]
@@ -223,7 +219,7 @@ view { viewer, stations, formModel } =
                 ]
 
         Failed ->
-            text <| t I18n.FailedToLoadStations
+            text <| t I18n.FailedToLoadLocations
 
 
 viewDateTime : (Time.Posix -> Msg) -> Time.Zone -> Time.Posix -> Html Msg
@@ -248,32 +244,32 @@ viewDateTime msg zone posix =
 init : Viewer -> ( Model, Cmd Msg )
 init viewer =
     ( { viewer = viewer
-      , stations = Loading
+      , locations = Loading
       , formModel = initForm (Viewer.toI18n viewer)
       }
     , Cmd.batch
         [ Task.perform GotNowTime Time.now
         , Ports.requestSearchFormFromStorage ()
-        , Task.attempt GotStations (getAllStations viewer)
+        , Task.attempt GotLocations (getAllLocations viewer)
         ]
     )
 
 
 initForm : I18n.TransFn -> FormModel
 initForm t =
-    { departureSearchSelect =
+    { startSelect =
         { search = ""
         , options = []
         , selectedOption = Nothing
         , isFocused = False
-        , placeholder = t I18n.DepartingFrom
+        , placeholder = t I18n.LeavingFrom
         }
-    , arrivalSearchSelect =
+    , finishSelect =
         { search = ""
         , options = []
         , selectedOption = Nothing
         , isFocused = False
-        , placeholder = t I18n.ArrivingTo
+        , placeholder = t I18n.GoingTo
         }
     , departureDateTime = Time.millisToPosix 0
     , problems = []
@@ -288,12 +284,12 @@ encodeForm : FormModel -> JE.Value
 encodeForm formModel =
     JE.object
         [ ( "departureStationId"
-          , formModel.departureSearchSelect.selectedOption
+          , formModel.startSelect.selectedOption
                 |> Maybe.map JE.string
                 |> Maybe.withDefault JE.null
           )
         , ( "arrivalStationId"
-          , formModel.arrivalSearchSelect.selectedOption
+          , formModel.finishSelect.selectedOption
                 |> Maybe.map JE.string
                 |> Maybe.withDefault JE.null
           )
@@ -320,13 +316,13 @@ updateFormModelWithFormPersistenceModel : FormModel -> FormStorageModel -> FormM
 updateFormModelWithFormPersistenceModel formModel formPersistenceModel =
     let
         departureSearchSelect =
-            formModel.departureSearchSelect
+            formModel.startSelect
 
         arrivalSearchSelect =
-            formModel.arrivalSearchSelect
+            formModel.finishSelect
     in
     { formModel
-        | departureSearchSelect = { departureSearchSelect | selectedOption = formPersistenceModel.departureStationId }
-        , arrivalSearchSelect = { arrivalSearchSelect | selectedOption = formPersistenceModel.arrivalStationId }
+        | startSelect = { departureSearchSelect | selectedOption = formPersistenceModel.departureStationId }
+        , finishSelect = { arrivalSearchSelect | selectedOption = formPersistenceModel.arrivalStationId }
         , departureDateTime = Time.millisToPosix formPersistenceModel.departureDateTime
     }

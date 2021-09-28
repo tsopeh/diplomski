@@ -13,10 +13,10 @@ type Term
       DefaultAppTitle
     | Redirecting
       -- HOME
-    | LoadingStations
-    | FailedToLoadStations
-    | DepartingFrom
-    | ArrivingTo
+    | LoadingLocations
+    | FailedToLoadLocations
+    | LeavingFrom
+    | GoingTo
       -- SEARCH RESULTS
     | LoadingBriefSchedules
     | FailedToLoadBriefSchedules
@@ -44,22 +44,22 @@ translate lang term =
             case term of
                 -- MAIN
                 DefaultAppTitle ->
-                    "Choo choo"
+                    "Truch Car"
 
                 Redirecting ->
                     "Redirecting..."
 
                 -- HOME
-                LoadingStations ->
-                    "Loading stations..."
+                LoadingLocations ->
+                    "Loading locations..."
 
-                FailedToLoadStations ->
-                    "Failed to load stations."
+                FailedToLoadLocations ->
+                    "Failed to load locations."
 
-                DepartingFrom ->
-                    "Departing from..."
+                LeavingFrom ->
+                    "Leaving from..."
 
-                ArrivingTo ->
+                GoingTo ->
                     "Going to..."
 
                 -- SEARCH RESULTS
@@ -92,7 +92,7 @@ translate lang term =
                     "Train"
 
                 StationName ->
-                    "Station"
+                    "Location"
 
                 TimeOfArrival ->
                     "Arrival"
@@ -104,22 +104,22 @@ translate lang term =
             case term of
                 -- MAIN
                 DefaultAppTitle ->
-                    "Ćihu Ćihu"
+                    "Truć Kar"
 
                 Redirecting ->
                     "Učitavanje stranice..."
 
                 -- HOME
-                LoadingStations ->
-                    "Ućitavanje stanica..."
+                LoadingLocations ->
+                    "Ućitavanje lokacija..."
 
-                FailedToLoadStations ->
-                    "Neuspešno učitavanje stanica."
+                FailedToLoadLocations ->
+                    "Neuspešno učitavanje lokacija."
 
-                DepartingFrom ->
+                LeavingFrom ->
                     "Polazim iz..."
 
-                ArrivingTo ->
+                GoingTo ->
                     "Idem u..."
 
                 -- SEARCH RESULTS

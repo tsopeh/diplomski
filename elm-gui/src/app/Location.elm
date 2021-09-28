@@ -1,4 +1,4 @@
-module Station exposing (Station, StationId, decoder, getAllStations, getStation, idToString, stringToId)
+module Location exposing (Location, LocationId, decoder, getAllLocations, getLocation, idToString, stringToId)
 
 import Api exposing (createRequestHeaders, handleJsonResponse)
 import Http
@@ -8,30 +8,30 @@ import Task exposing (Task)
 import Viewer exposing (Viewer)
 
 
-type StationId
-    = StationId String
+type LocationId
+    = LocationId String
 
 
 stringToId =
-    StationId
+    LocationId
 
 
-idToString : StationId -> String
-idToString (StationId str) =
+idToString : LocationId -> String
+idToString (LocationId str) =
     str
 
 
-type alias Station =
-    { id : StationId
+type alias Location =
+    { id : LocationId
     , name : String
     }
 
 
-getAllStations : Viewer -> Task Http.Error (List Station)
-getAllStations viewer =
+getAllLocations : Viewer -> Task Http.Error (List Location)
+getAllLocations viewer =
     Http.task
         { method = "GET"
-        , url = Api.getApiUrl [ "stations" ]
+        , url = Api.getApiUrl [ "locations" ] []
         , headers = createRequestHeaders viewer
         , body = Http.emptyBody
         , timeout = Nothing
@@ -42,11 +42,11 @@ getAllStations viewer =
         }
 
 
-getStation : Viewer -> StationId -> Task Http.Error Station
-getStation viewer id =
+getLocation : Viewer -> LocationId -> Task Http.Error Location
+getLocation viewer id =
     Http.task
         { method = "GET"
-        , url = Api.getApiUrl [ "stations", idToString id ]
+        , url = Api.getApiUrl [ "locations", idToString id ] []
         , headers = createRequestHeaders viewer
         , body = Http.emptyBody
         , timeout = Nothing
@@ -54,8 +54,8 @@ getStation viewer id =
         }
 
 
-decoder : JD.Decoder Station
+decoder : JD.Decoder Location
 decoder =
-    JD.succeed Station
-        |> JDP.required "id" (JD.string |> JD.map StationId)
+    JD.succeed Location
+        |> JDP.required "id" (JD.string |> JD.map LocationId)
         |> JDP.required "name" JD.string

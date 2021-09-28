@@ -8,8 +8,8 @@ import I18n
 import Json.Decode as JD
 import Json.Encode as JE
 import Page.Home as Home
-import Page.Schedule as Schedule
-import Page.SearchResults as SearchResults
+import Page.Offer as Offer
+import Page.Suggestions as Suggestions
 import Ports
 import Route as Route exposing (Route)
 import Task
@@ -25,8 +25,8 @@ import Viewer exposing (Viewer)
 type Model
     = Redirect Viewer
     | Home Home.Model
-    | SearchResults SearchResults.Model
-    | Schedule Schedule.Model
+    | Suggestions Suggestions.Model
+    | Offer Offer.Model
 
 
 toViewer : Model -> Viewer
@@ -38,11 +38,11 @@ toViewer mainModel =
         Home model ->
             Home.toViewer model
 
-        SearchResults model ->
-            SearchResults.toViewer model
+        Suggestions model ->
+            Suggestions.toViewer model
 
-        Schedule model ->
-            Schedule.toViewer model
+        Offer model ->
+            Offer.toViewer model
 
 
 updateViewer : Model -> Viewer -> Model
@@ -54,11 +54,11 @@ updateViewer mainModel viewer =
         Home model ->
             Home <| Home.updateViewer model viewer
 
-        SearchResults model ->
-            SearchResults <| SearchResults.updateViewer model viewer
+        Suggestions model ->
+            Suggestions <| Suggestions.updateViewer model viewer
 
-        Schedule model ->
-            Schedule <| Schedule.updateViewer model viewer
+        Offer model ->
+            Offer <| Offer.updateViewer model viewer
 
 
 
@@ -73,8 +73,8 @@ type Msg
     | GotHereZone Time.Zone
     | GotFromAppLayout (AppLayout.Msg Msg)
     | GotHomeMsg Home.Msg
-    | GotSearchResultsMsg SearchResults.Msg
-    | GotScheduleMsg Schedule.Msg
+    | GotSuggestionMsg Suggestions.Msg
+    | GotOfferMsg Offer.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -127,19 +127,19 @@ update mainMsg mainModel =
             in
             ( Home updatedModel, Cmd.map GotHomeMsg cmd )
 
-        ( GotSearchResultsMsg msg, SearchResults model ) ->
+        ( GotSuggestionMsg msg, Suggestions model ) ->
             let
                 ( updatedModel, cmd ) =
-                    SearchResults.update msg model
+                    Suggestions.update msg model
             in
-            ( SearchResults updatedModel, Cmd.map GotSearchResultsMsg cmd )
+            ( Suggestions updatedModel, Cmd.map GotSuggestionMsg cmd )
 
-        ( GotScheduleMsg msg, Schedule model ) ->
+        ( GotOfferMsg msg, Offer model ) ->
             let
                 ( updatedModel, cmd ) =
-                    Schedule.update msg model
+                    Offer.update msg model
             in
-            ( Schedule updatedModel, Cmd.map GotScheduleMsg cmd )
+            ( Offer updatedModel, Cmd.map GotOfferMsg cmd )
 
         ( _, _ ) ->
             let
@@ -162,11 +162,12 @@ changeModelTo maybeRoute mainModel =
         Just Route.Home ->
             mapInit Home GotHomeMsg <| Home.init viewer
 
-        Just (Route.SearchResults depId arrId depDateTime) ->
-            mapInit SearchResults GotSearchResultsMsg <| SearchResults.init viewer depId arrId (Time.millisToPosix depDateTime)
+        Just (Route.Suggestions startId finishId depDateTime) ->
+            mapInit Suggestions GotSuggestionMsg <| Suggestions.init viewer startId finishId (Time.millisToPosix depDateTime)
 
-        Just (Route.Schedule scheduleId) ->
-            mapInit Schedule GotScheduleMsg <| Schedule.init viewer scheduleId
+        Just (Route.Offer offerId) ->
+            --mapInit Offer GotOfferMsg <| Offer.init viewer offerId
+            ( mainModel, Route.navTo viewer Route.Home )
 
 
 mapInit : (subModel -> Model) -> (msg -> Msg) -> ( subModel, Cmd msg ) -> ( Model, Cmd Msg )
@@ -190,11 +191,11 @@ view mainModel =
                 Home model ->
                     Html.map GotHomeMsg <| Home.view model
 
-                SearchResults model ->
-                    Html.map GotSearchResultsMsg <| SearchResults.view model
+                Suggestions model ->
+                    Html.map GotSuggestionMsg <| Suggestions.view model
 
-                Schedule model ->
-                    Html.map GotScheduleMsg <| Schedule.view model
+                Offer model ->
+                    Html.map GotOfferMsg <| Offer.view model
 
         body =
             List.map (Html.map GotFromAppLayout) (AppLayout.view (AppLayout.init (toViewer mainModel)) content)

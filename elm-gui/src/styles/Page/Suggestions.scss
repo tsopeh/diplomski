@@ -3,7 +3,7 @@
 
 $search-header-height: 4rem;
 
-.search-results-page {
+.suggestions-page {
   display: flex;
   flex-direction: column;
 
@@ -21,6 +21,7 @@ $search-header-height: 4rem;
     background-color: $primary-background-color;
     border-bottom-left-radius: 1.8rem;
     border-bottom-right-radius: 1.8rem;
+    z-index: 1; // pipe is another stacking something because of the `scale`
 
     > * {
       user-select: none;
@@ -79,7 +80,7 @@ $search-header-height: 4rem;
     .entry {
       @include horizontal(0.5rem);
       height: 10rem;
-      padding: 1rem;
+      padding: 0.5rem;
       border-radius: 1rem;
       box-shadow: rgba(0, 0, 0, 0.16) 0 1pt 4pt, rgba(0, 0, 0, 0.08) 0 2pt 8pt;
       cursor: pointer;
@@ -89,10 +90,9 @@ $search-header-height: 4rem;
         display: grid;
         grid-auto-rows: 1fr;
         grid-template-areas:
-          "dep-time dep-pin dep-name"
+          "dep-time dep-pin start-name"
           "length   pipe    .       "
           "arr-time arr-pin arr-name";
-        justify-content: center;
         align-items: center;
         column-gap: 0.5rem;
 
@@ -100,9 +100,8 @@ $search-header-height: 4rem;
         $pipe-width: 0.3rem;
 
         .pin {
-          align-self: center;
           justify-self: center;
-          border-radius: 100%;
+          border-radius: 50%;
 
           &.dep-pin {
             grid-area: dep-pin;
@@ -127,41 +126,103 @@ $search-header-height: 4rem;
           width: $pipe-width;
           height: 100%;
           justify-self: center;
-          align-self: center;
           background-color: $pipeColor;
-          box-shadow: 0px -1rem 0px 0px $pipeColor, 0px 1rem 0px 0px $pipeColor;
+          transform: scaleY(2);
         }
 
         .dep-time {
           grid-area: dep-time;
+          justify-self: end;
         }
 
-        .dep-name {
-          grid-area: dep-name;
+        .start-name {
+          grid-area: start-name;
+          justify-self: start;
         }
 
         .arr-time {
           grid-area: arr-time;
+          justify-self: end;
         }
 
         .arr-name {
           grid-area: arr-name;
+          justify-self: start;
         }
 
         .length {
           grid-area: length;
           color: #778899;
           font-size: 0.8rem;
+          justify-self: end;
         }
 
       }
 
-      .train-info {
+      .info {
         flex: 1 0 auto;
-        @include vertical(0.5rem);
-        padding: 0.5rem;
-        font-size: 0.9rem;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-areas:
+          "driver-avatar  driver-info   driver-info   "
+          "driver-avatar  vehicle-info  vehicle-info  "
+          "conditions     conditions    conditions    "
+          "seats          seats         price         ";
+        justify-content: start;
+        align-items: center;
+        column-gap: 0.5rem;
+        padding: 0.5rem 0.5rem 0.5rem 1rem;
+        font-size: 1rem;
         border-left: 1px solid lightgray;
+
+        .driver-avatar {
+          grid-area: driver-avatar;
+          background-color: $primary-background-color;
+          width: 2.5rem;
+          height: 2.5rem;
+          border-radius: 100%;
+        }
+
+        .driver-info {
+          grid-area: driver-info;
+        }
+
+        .vehicle-info {
+          grid-area: vehicle-info;
+        }
+
+        .conditions {
+          grid-area: conditions;
+          @include horizontal(1rem);
+
+          .condition {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 100%;
+
+            svg {
+              width: 100%;
+              height: 100%;
+            }
+          }
+        }
+
+        .seats {
+          grid-area: seats;
+          @include horizontal(1rem);
+
+          .seat {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 100%;
+          }
+        }
+
+        .price {
+          grid-area: price;
+          justify-self: end;
+        }
+
       }
 
     }
