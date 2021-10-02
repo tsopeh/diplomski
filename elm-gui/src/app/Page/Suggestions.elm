@@ -7,7 +7,7 @@ import I18n
 import Location exposing (Location, LocationId)
 import Route
 import Suggestion
-import SvgIcons exposing (arrowIcon, searchIcon)
+import SvgIcons exposing (rightArrow, search)
 import Task
 import Time
 import Utils exposing (Status(..), posixToDate, posixToHoursMinutes)
@@ -119,7 +119,7 @@ view model =
         suggestionsHtml =
             case model.suggestions of
                 Loading ->
-                    [ text <| t I18n.LoadingBriefSchedules ]
+                    [ text <| t I18n.LoadingSuggestions ]
 
                 Loaded suggestions ->
                     List.map
@@ -127,7 +127,7 @@ view model =
                         suggestions
 
                 Failed ->
-                    [ text <| t I18n.FailedToLoadBriefSchedules ]
+                    [ text <| t I18n.FailedToLoadSuggestions ]
     in
     div [ class "suggestions-page" ]
         [ viewHeader model.viewer ( departureStation, arrivalStation ) model.departureDateTime
@@ -158,11 +158,11 @@ viewHeader viewer ( departure, arrival ) dateTime =
     in
     div [ class "header" ]
         [ a [ href "../" ]
-            [ div [ class "icon-container" ] [ searchIcon ]
+            [ div [ class "icon-container" ] [ search ]
             , div [ class "info" ]
                 [ div [ class "route" ]
                     [ span [] [ departureHtml ]
-                    , arrowIcon
+                    , rightArrow
                     , span [] [ arrivalHtml ]
                     ]
                 , div [ class "date" ] [ text <| posixToDate (Viewer.toZone viewer) dateTime ]

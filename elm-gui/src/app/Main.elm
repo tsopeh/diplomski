@@ -166,8 +166,7 @@ changeModelTo maybeRoute mainModel =
             mapInit Suggestions GotSuggestionMsg <| Suggestions.init viewer startId finishId (Time.millisToPosix depDateTime)
 
         Just (Route.Offer offerId) ->
-            --mapInit Offer GotOfferMsg <| Offer.init viewer offerId
-            ( mainModel, Route.navTo viewer Route.Home )
+            mapInit Offer GotOfferMsg <| Offer.init viewer offerId
 
 
 mapInit : (subModel -> Model) -> (msg -> Msg) -> ( subModel, Cmd msg ) -> ( Model, Cmd Msg )

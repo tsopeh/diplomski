@@ -53,6 +53,7 @@ export interface Offer {
   finishLocationName: string
   departureDate: string
   arrivalDate: string
+  duration: string
   price: string // formatted, ready for view
   driver: {
     id: string
@@ -61,12 +62,16 @@ export interface Offer {
     avatar: string
     phone: string
   }
+  vehicle: Vehicle
+  numberOfSeats: number
+  passengers: Array<Passenger>
   smokingAllowed: boolean
   petsAllowed: boolean
   childrenAllowed: boolean
 }
 
 export interface Passenger {
+  id: string
   firstName: string
   avatar: string
 }

@@ -13,7 +13,7 @@ import Location exposing (Location, LocationId, getAllLocations)
 import Ports
 import Route
 import SearchSelect
-import SvgIcons exposing (searchIcon)
+import SvgIcons exposing (search)
 import Task exposing (Task)
 import Time
 import Utils exposing (Status(..), posixToIsoDate)
@@ -214,7 +214,7 @@ view { viewer, locations, formModel } =
                             SearchSelect.view formModel.finishSelect
                         , viewDateTime DepartureDateTimeChanged (Viewer.toZone viewer) formModel.departureDateTime
                         ]
-                    , button [ type_ "submit" ] [ searchIcon ]
+                    , button [ type_ "submit" ] [ search ]
                     ]
                 ]
 

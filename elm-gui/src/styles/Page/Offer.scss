@@ -1,4 +1,279 @@
 @import "src/styles/colors";
+@import "src/styles/utils";
+
+$hr-color: #ededed;
 
 .offer-page {
+
+  .departure-date {
+    @include primaryText;
+    font-size: 2.2rem;
+    padding: 1em 2rem;
+  }
+
+  .notice {
+    @include horizontal(1.5rem);
+    align-items: center;
+    padding-left: 2rem;
+    padding-bottom: 1.5rem;
+    @include secondaryText;
+    font-size: 1.4rem;
+    fill: $secondary-text-color;
+  }
+
+  .timeline {
+    height: 8rem;
+    display: grid;
+    grid-auto-rows: 1fr;
+    grid-template-areas:
+          "dep-time dep-pin start-name"
+          "length   pipe    .         "
+          "arr-time arr-pin arr-name  ";
+    align-items: center;
+    column-gap: 0.5rem;
+    font-size: 1.5rem;
+    @include primaryText;
+
+    $pipeColor: $primary-text-color;
+    $pipe-width: 0.3rem;
+
+    .pin {
+      justify-self: center;
+      border-radius: 50%;
+
+      &.dep-pin {
+        grid-area: dep-pin;
+        width: 0.8rem;
+        height: 0.8rem;
+        background-color: $pipeColor;
+      }
+
+      &.arr-pin {
+        grid-area: arr-pin;
+        width: 0;
+        height: 0;
+        border-left: 0.5rem solid transparent;
+        border-right: 0.5rem solid transparent;
+        background-color: transparent;
+        border-top: 1rem solid $pipeColor;
+      }
+    }
+
+    .pipe {
+      grid-area: pipe;
+      width: $pipe-width;
+      height: 100%;
+      justify-self: center;
+      background-color: $pipeColor;
+      transform: scaleY(2);
+    }
+
+    .dep-time {
+      grid-area: dep-time;
+      justify-self: end;
+    }
+
+    .start-name {
+      grid-area: start-name;
+      justify-self: start;
+    }
+
+    .arr-time {
+      grid-area: arr-time;
+      justify-self: end;
+    }
+
+    .arr-name {
+      grid-area: arr-name;
+      justify-self: start;
+    }
+
+    .length {
+      grid-area: length;
+      @include secondaryText;
+      font-size: 1.2rem;
+      justify-self: end;
+    }
+  }
+
+  .thick-horizontal-separator {
+    padding: 0.5rem 0;
+
+    hr {
+      height: 0.8rem;
+      border: none;
+      background-color: $hr-color
+    }
+  }
+
+  .thin-horizontal-separator {
+    padding: 0.5em 2rem;
+
+    hr {
+      height: 1px;
+      border: none;
+      background-color: $hr-color;
+    }
+  }
+
+  .price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+
+    & :nth-child(1) {
+      font-size: 1.3rem;
+      @include secondaryText;
+    }
+
+    & :nth-child(2) {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+  }
+
+  .driver {
+    height: 6rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 4rem 3rem;
+    column-gap: 1rem;
+    grid-template-areas:
+      "name     avatar arrow"
+      "tagline  avatar arrow";
+    cursor: pointer;
+    text-decoration: none;
+
+    .name {
+      grid-area: name;
+      align-self: end;
+      font-size: 1.5rem;
+      @include primaryText;
+    }
+
+    .tagline {
+      grid-area: tagline;
+      align-self: start;
+      @include secondaryText;
+    }
+
+    .avatar {
+      grid-area: avatar;
+      height: 4rem;
+      width: 4rem;
+      align-self: center;
+      border-radius: 50%;
+      background-color: $primary-background-color;
+    }
+
+    .arrow {
+      grid-area: arrow;
+      align-self: center;
+      justify-self: end;
+
+      svg {
+        width: 3rem;
+        height: 3rem;
+        fill: $secondary-text-color;
+      }
+    }
+  }
+
+  .icon-and-text {
+    grid-area: contact;
+    padding: 1.5rem 2rem;
+    @include horizontal(2rem);
+    align-items: center;
+    cursor: pointer;
+
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    div {
+      font-size: 1.4rem;
+    }
+
+    &.contact {
+      color: $primary-background-color;
+      fill: $primary-background-color
+    }
+
+    &.condition {
+      color: $secondary-text-color;
+      fill: $secondary-text-color
+    }
+
+  }
+
+  .vehicle {
+    height: 6rem;
+    padding: 0 2rem;
+    margin: 1rem 0;
+    display: grid;
+    grid-template-columns: 1fr 4rem;
+    column-gap: 1rem;
+    grid-template-areas:
+      "name     avatar"
+      "tagline  avatar";
+
+    .name {
+      grid-area: name;
+      align-self: end;
+      font-size: 1.5rem;
+      @include primaryText;
+    }
+
+    .description {
+      grid-area: tagline;
+      align-self: start;
+      @include secondaryText;
+    }
+
+    .avatar {
+      grid-area: avatar;
+      height: 4rem;
+      width: 4rem;
+      align-self: center;
+      border-radius: 50%;
+      background-color: $primary-background-color;
+    }
+  }
+
+  .subtitle {
+    margin-top: 1rem;
+    margin-left: 2rem;
+    @include primaryText;
+    font-size: 1.3rem;
+
+    & + .notice {
+      margin: 2rem 0;
+    }
+  }
+
+  .confirmation {
+    position: sticky;
+    bottom: 0;
+    height: 6rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+    border-top: 1px solid $hr-color;
+
+    button {
+      padding: 1rem;
+      border-radius: 3rem;
+      background-color: $primary-background-color;
+      outline: none;
+      border-color: transparent;
+      color: #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  }
+
 }

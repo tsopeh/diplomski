@@ -17,20 +17,10 @@ type Term
     | FailedToLoadLocations
     | LeavingFrom
     | GoingTo
-      -- SEARCH RESULTS
-    | LoadingBriefSchedules
-    | FailedToLoadBriefSchedules
+      -- SUGGESTIONS
+    | LoadingSuggestions
+    | FailedToLoadSuggestions
     | TripDuration
-    | SearchResults_Train String
-    | SearchResults_StartingPrice Float
-    | Latency Int
-      -- SCHEDULE
-    | LoadingSchedule
-    | FailedToLoadSchedule
-    | Schedule_Train
-    | StationName
-    | TimeOfArrival
-    | TimeOfDeparture
 
 
 type alias TransFn =
@@ -63,42 +53,14 @@ translate lang term =
                     "Going to..."
 
                 -- SEARCH RESULTS
-                LoadingBriefSchedules ->
+                LoadingSuggestions ->
                     "Loading schedules..."
 
-                FailedToLoadBriefSchedules ->
+                FailedToLoadSuggestions ->
                     "Failed to load schedules."
 
                 TripDuration ->
                     "Trip duration"
-
-                SearchResults_Train trainNumber ->
-                    "Train: " ++ trainNumber
-
-                SearchResults_StartingPrice price ->
-                    "Ticket starting price: " ++ String.fromFloat price
-
-                Latency latency ->
-                    "Latency: " ++ String.fromInt latency
-
-                -- SCHEDULE
-                LoadingSchedule ->
-                    "Loading schedule..."
-
-                FailedToLoadSchedule ->
-                    "Failed to load schedule"
-
-                Schedule_Train ->
-                    "Train"
-
-                StationName ->
-                    "Location"
-
-                TimeOfArrival ->
-                    "Arrival"
-
-                TimeOfDeparture ->
-                    "Departure"
 
         Srb ->
             case term of
@@ -123,42 +85,14 @@ translate lang term =
                     "Idem u..."
 
                 -- SEARCH RESULTS
-                LoadingBriefSchedules ->
+                LoadingSuggestions ->
                     "Učitavanje rasporeda..."
 
-                FailedToLoadBriefSchedules ->
+                FailedToLoadSuggestions ->
                     "Neuspešno učitavanje rasporeda."
 
                 TripDuration ->
                     "Dužina puta"
-
-                SearchResults_Train trainNumber ->
-                    "Voz: " ++ trainNumber
-
-                SearchResults_StartingPrice price ->
-                    "Početna cena karte: " ++ String.fromFloat price
-
-                Latency latency ->
-                    "Kasni: " ++ String.fromInt latency
-
-                -- SCHEDULE
-                LoadingSchedule ->
-                    "Učitavanje rasporeda..."
-
-                FailedToLoadSchedule ->
-                    "Neuspešno učitavanje rasporeda."
-
-                Schedule_Train ->
-                    "Voz"
-
-                StationName ->
-                    "Stanica"
-
-                TimeOfArrival ->
-                    "Dolazak"
-
-                TimeOfDeparture ->
-                    "Polazak"
 
 
 languageDecoder : JD.Decoder Language

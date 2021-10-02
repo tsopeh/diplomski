@@ -2,21 +2,21 @@ import { Injectable } from '@nestjs/common'
 import * as DateFns from 'date-fns'
 import { LocationsService } from '../location/locations.service'
 import { UsersService } from '../user/users.service'
-import { Offer, Ride, Suggestion } from './ride'
+import { Offer, Passenger, Ride, Suggestion } from './ride'
 
 const MOCK_DEPARTURE_DATE = DateFns.addDays(new Date(), 1)
 
 const MOCK_RIDES: Array<Ride> = [
   {
     id: 'first ride',
-    driver: 'first user',
+    driver: 'third user',
     vehicle: {
       name: 'Yugo',
       description: 'Red',
       avatar: 'default-vehicle-avatar',
     },
     numberOfSeats: 2,
-    passengers: [],
+    passengers: ['fifth user', 'second user'],
     departureDate: MOCK_DEPARTURE_DATE.toISOString(),
     arrivalDate: DateFns.addHours(MOCK_DEPARTURE_DATE, 3).toISOString(),
     startLocation: 'Nish',
@@ -28,7 +28,7 @@ const MOCK_RIDES: Array<Ride> = [
   },
   {
     id: 'second ride',
-    driver: 'first user',
+    driver: 'fourth user',
     vehicle: {
       name: 'Fiat',
       description: 'Red',
@@ -41,7 +41,7 @@ const MOCK_RIDES: Array<Ride> = [
     startLocation: 'Belgrade',
     finishLocation: 'Novi Sad',
     price: 500,
-    smokingAllowed: true,
+    smokingAllowed: false,
     petsAllowed: true,
     childrenAllowed: false,
   },
@@ -92,12 +92,21 @@ export class RidesService {
     const ride = this.getRide(id)
     if (ride == null) return null
     const driver = this.usersService.getUserById(ride.driver)!
+    const passengers = ride.passengers.map((passengerId): Passenger => {
+      const user = this.usersService.getUserById(passengerId)!
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        avatar: user.avatar,
+      }
+    })
     return {
       id: ride.id,
       startLocationName: this.locationsService.getSingle(ride.startLocation)?.name ?? 'N/A',
       finishLocationName: this.locationsService.getSingle(ride.finishLocation)?.name ?? 'N/A',
       departureDate: ride.departureDate,
       arrivalDate: ride.arrivalDate,
+      duration: getDuration(new Date(ride.departureDate), new Date(ride.arrivalDate)),
       driver: {
         id: driver.id,
         firstName: driver.firstName,
@@ -105,6 +114,9 @@ export class RidesService {
         avatar: driver.avatar,
         phone: driver.phone,
       },
+      vehicle: ride.vehicle,
+      numberOfSeats: ride.numberOfSeats,
+      passengers: passengers,
       price: priceInRsd(ride.price),
       smokingAllowed: ride.smokingAllowed,
       petsAllowed: ride.petsAllowed,
