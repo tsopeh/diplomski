@@ -6,6 +6,7 @@ import Suggestion
 import Url
 import Url.Builder as UrlBuilder
 import Url.Parser as UrlParser exposing ((</>))
+import User
 import Viewer exposing (Viewer)
 
 
@@ -13,6 +14,7 @@ type Route
     = Home
     | Suggestions LocationId LocationId Int
     | Offer Suggestion.SuggestionId
+    | User User.UserId
 
 
 parser : UrlParser.Parser (Route -> a) a
@@ -21,6 +23,7 @@ parser =
         [ UrlParser.map Home UrlParser.top
         , UrlParser.map Suggestions (UrlParser.s "suggestions" </> (UrlParser.string |> UrlParser.map Location.stringToId) </> (UrlParser.string |> UrlParser.map Location.stringToId) </> UrlParser.int)
         , UrlParser.map Offer (UrlParser.s "offer" </> (UrlParser.string |> UrlParser.map Suggestion.stringToId))
+        , UrlParser.map User (UrlParser.s "user" </> (UrlParser.string |> UrlParser.map User.stringToId))
         ]
 
 
@@ -35,6 +38,9 @@ routeToString route =
 
         Offer id ->
             UrlBuilder.absolute [ "offer", Suggestion.idToString id ] []
+
+        User id ->
+            UrlBuilder.absolute [ "user", User.idToString id ] []
 
 
 fromUrl : Url.Url -> Maybe Route

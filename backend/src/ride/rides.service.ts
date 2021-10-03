@@ -13,7 +13,7 @@ const MOCK_RIDES: Array<Ride> = [
     vehicle: {
       name: 'Yugo',
       description: 'Red',
-      avatar: 'default-vehicle-avatar',
+      avatar: getDefaultCarAvatar(),
     },
     numberOfSeats: 2,
     passengers: ['fifth user', 'second user'],
@@ -32,7 +32,7 @@ const MOCK_RIDES: Array<Ride> = [
     vehicle: {
       name: 'Fiat',
       description: 'Red',
-      avatar: 'default-vehicle-avatar',
+      avatar: getDefaultCarAvatar(),
     },
     numberOfSeats: 3,
     passengers: [],
@@ -135,4 +135,8 @@ function getDuration (startDate: Date, endDate: Date): string {
 
 function priceInRsd (price: number): string {
   return `din. ${price},00`
+}
+
+function getDefaultCarAvatar (): string {
+  return 'avatars/car-128.png'
 }

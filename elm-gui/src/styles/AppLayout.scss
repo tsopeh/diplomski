@@ -22,23 +22,44 @@ html {
 
 }
 
-$page-header-height: 3.5rem;
+$page-header-height: 5rem;
 $page-footer-height: 12rem;
 
 header {
+  width: 100%;
   height: $page-header-height;
-  background-color: $primary-background-color;
-  @include center;
+  position: relative;
+  top: 0;
+  left: 0;
+  padding: 0.5rem 2rem;
+  display: flex;
+  align-items: center;
 
   .logo {
-    width: 2.5rem;
-    height: 2.5rem;
-    background-color: #ffffff;
-    border-radius: 100%;
-    background-image: url("../assets/srbija-voz-logo.jpg");
+    justify-self: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    background-image: url("../assets/logo.png");
     background-repeat: no-repeat;
     background-size: contain;
-    border: 0.3rem solid #ffffff;
+
+    @include desktop {
+      & {
+        @include absoluteCenter;
+      }
+    }
+  }
+
+  .avatar {
+    width: 5rem;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+
+    img {
+      width: 3rem;
+      height: 3rem;
+    }
   }
 
 }
@@ -62,7 +83,8 @@ footer {
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
-  @include primaryContainer;
+  background-color: $primary-text-color;
+  color: #ffffff;
 
   .select-lang {
     width: 15em;

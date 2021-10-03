@@ -1,10 +1,11 @@
 module Page.Offer exposing (..)
 
-import Html exposing (Html, a, button, div, hr, text)
+import Html exposing (Html, a, button, div, hr, img, text)
 import Html.Attributes exposing (class, href, title)
 import Html.Events exposing (onClick)
 import Http
 import I18n
+import Image
 import Offer
 import Suggestion
 import Svg exposing (Svg)
@@ -144,12 +145,12 @@ viewThinHorizontalSeparator =
     div [ class "thin-horizontal-separator" ] [ hr [] [] ]
 
 
-viewUser : String -> String -> String -> String -> Html Msg
+viewUser : String -> String -> String -> Image.Avatar -> Html Msg
 viewUser id name tagline avatar =
     a [ class "driver", href ("/user/" ++ id) ]
         [ div [ class "name" ] [ text name ]
         , div [ class "tagline" ] [ text tagline ]
-        , div [ class "avatar" ] []
+        , div [ class "avatar" ] [ Image.avatarToImg avatar ]
         , div [ class "arrow" ] [ SvgIcons.rightArrowTip ]
         ]
 
@@ -172,7 +173,7 @@ viewVehicle vehicle =
     div [ class "vehicle" ]
         [ div [ class "name" ] [ text vehicle.name ]
         , div [ class "description" ] [ text vehicle.description ]
-        , div [ class "avatar" ] []
+        , div [ class "avatar" ] [ Image.avatarToImg vehicle.avatar ]
         ]
 
 

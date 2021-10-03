@@ -1,5 +1,6 @@
 .search-select {
   position: relative;
+  display: flex;
 
   &.onTop {
     z-index: 1;
@@ -14,9 +15,7 @@
   }
 
   input {
-    position: relative;
-    width: 100%;
-    height: 2em;
+    flex: 1 1 auto;
     font-size: 1.3em;
     padding-left: 0.3em;
     cursor: pointer;
@@ -26,6 +25,7 @@
   .options {
     width: 100%;
     position: absolute;
+    top: 100%;
     left: 0;
     overflow: auto;
     max-height: 15em;

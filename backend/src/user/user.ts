@@ -15,6 +15,17 @@ export interface User {
   driver: Array<string>
   passenger: Array<string>
   avatar: string
+  accountCreationDate: string
+}
+
+export interface PreviewUser {
+  id: string
+  firstName: string
+  lastName: string
+  avatar: string
+  wasDriverCount: number
+  wasPassengerCount: number
+  memberFromDate: string
 }
 
 export interface SignUpUser {

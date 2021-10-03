@@ -2,6 +2,7 @@ module Offer exposing (..)
 
 import Api exposing (createRequestHeaders, handleJsonResponse)
 import Http
+import Image
 import Iso8601
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
@@ -34,7 +35,7 @@ type alias Driver =
     { id : String
     , firstName : String
     , lastName : String
-    , avatar : String
+    , avatar : Image.Avatar
     , phone : String
     }
 
@@ -42,7 +43,7 @@ type alias Driver =
 type alias Passenger =
     { id : String
     , firstName : String
-    , avatar : String
+    , avatar : Image.Avatar
     }
 
 
@@ -70,7 +71,7 @@ passengerDecoder =
     JD.succeed Passenger
         |> JDP.required "id" JD.string
         |> JDP.required "firstName" JD.string
-        |> JDP.required "avatar" JD.string
+        |> JDP.required "avatar" Image.decoder
 
 
 driverDecoder : JD.Decoder Driver
@@ -79,7 +80,7 @@ driverDecoder =
         |> JDP.required "id" JD.string
         |> JDP.required "firstName" JD.string
         |> JDP.required "lastName" JD.string
-        |> JDP.required "avatar" JD.string
+        |> JDP.required "avatar" Image.decoder
         |> JDP.required "phone" JD.string
 
 

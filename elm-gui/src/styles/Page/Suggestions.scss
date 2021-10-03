@@ -18,9 +18,7 @@ $search-header-height: 4rem;
     top: 0;
     height: $search-header-height;
     padding: 0.5rem 0.5rem 0.5rem 0.5rem;
-    background-color: $primary-background-color;
-    border-bottom-left-radius: 1.8rem;
-    border-bottom-right-radius: 1.8rem;
+    background-color: $neutral-gray;
     z-index: 1; // pipe is another stacking something because of the `scale`
 
     > * {
@@ -177,7 +175,6 @@ $search-header-height: 4rem;
 
         .driver-avatar {
           grid-area: driver-avatar;
-          background-color: $primary-background-color;
           width: 2.5rem;
           height: 2.5rem;
           border-radius: 100%;

@@ -2,6 +2,7 @@ module Suggestion exposing (..)
 
 import Api
 import Http
+import Image
 import Iso8601
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
@@ -34,7 +35,7 @@ type alias Model =
     , arrivalDateTime : Time.Posix
     , duration : String
     , driverName : String
-    , driverAvatar : String
+    , driverAvatar : Image.Avatar
     , vehicle : Vehicle.Model
     , price : String
     , numberOfSeats : Int
@@ -55,7 +56,7 @@ decoder =
         |> JDP.required "arrivalDate" Iso8601.decoder
         |> JDP.required "duration" JD.string
         |> JDP.required "driverName" JD.string
-        |> JDP.required "driverAvatar" JD.string
+        |> JDP.required "driverAvatar" Image.decoder
         |> JDP.required "vehicle" Vehicle.decoder
         |> JDP.required "price" JD.string
         |> JDP.required "numberOfSeats" JD.int

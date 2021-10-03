@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { v4 as uuid } from 'uuid'
-import { Gender, User } from './user'
+import { Gender, PreviewUser, User } from './user'
 
 const TOKENS: Map<string, string> = new Map<string, string>() // token | userId
 
@@ -16,7 +16,8 @@ const MOCK_USERS: Array<User> = [
     phone: '12345678',
     driver: [],
     passenger: [],
-    avatar: 'default-user-avatar',
+    avatar: getDefaultUserAvatarPath(),
+    accountCreationDate: new Date().toISOString(),
   },
   {
     id: 'second user',
@@ -29,7 +30,8 @@ const MOCK_USERS: Array<User> = [
     phone: '87654321',
     driver: [],
     passenger: ['first ride'],
-    avatar: 'default-user-avatar',
+    avatar: getDefaultUserAvatarPath(),
+    accountCreationDate: new Date().toISOString(),
   },
   {
     id: 'third user',
@@ -42,7 +44,8 @@ const MOCK_USERS: Array<User> = [
     phone: '87654321',
     driver: ['first ride'],
     passenger: [],
-    avatar: 'default-user-avatar',
+    avatar: getDefaultUserAvatarPath(),
+    accountCreationDate: new Date().toISOString(),
   },
   {
     id: 'fourth user',
@@ -55,7 +58,8 @@ const MOCK_USERS: Array<User> = [
     phone: '87654321',
     driver: ['second ride'],
     passenger: [],
-    avatar: 'default-user-avatar',
+    avatar: getDefaultUserAvatarPath(),
+    accountCreationDate: new Date().toISOString(),
   },
   {
     id: 'fifth user',
@@ -68,7 +72,8 @@ const MOCK_USERS: Array<User> = [
     phone: '87654321',
     driver: [],
     passenger: ['first ride'],
-    avatar: 'default-user-avatar',
+    avatar: getDefaultUserAvatarPath(),
+    accountCreationDate: new Date().toISOString(),
   },
 ]
 
@@ -93,5 +98,23 @@ export class UsersService {
     return this.getAllUsers().find(u => u.id == id) ?? null
   }
 
+  public getPreviewUser (id: string): PreviewUser {
+    const user = this.getUserById(id)!
+
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      avatar: user.avatar,
+      wasDriverCount: user.driver.length,
+      wasPassengerCount: user.passenger.length,
+      memberFromDate: user.accountCreationDate,
+    }
+  }
+
+}
+
+export function getDefaultUserAvatarPath (): string {
+  return 'avatars/anon-avatar-128.png'
 }
 

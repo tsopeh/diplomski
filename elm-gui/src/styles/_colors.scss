@@ -1,13 +1,15 @@
 $primary-background-color: #2c6bd6;
 $primary-text-color: #054752;
 $secondary-text-color: #708c91;
+$accent-color: #00aff5;
+$neutral-gray: #dddddd;
 
-@mixin primaryText () {
+@mixin primaryText() {
   color: $primary-text-color;
   font-weight: bold;
 }
 
-@mixin secondaryText () {
+@mixin secondaryText() {
   color: $secondary-text-color;
   font-weight: 400;
 }

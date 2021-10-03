@@ -1,0 +1,23 @@
+@import "../utils";
+@import "../colors";
+
+.user-page {
+  @include  vertical(1.5rem);
+  align-items: center;
+
+  .avatar {
+    margin-top: 5rem;
+    width: 10rem;
+    height: 10rem
+  }
+
+  .name {
+    @include primaryText;
+    font-size: 3rem;
+  }
+
+  .info{
+    @include secondaryText;
+    font-size: 1.5rem;
+  }
+}

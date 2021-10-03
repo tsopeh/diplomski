@@ -1,9 +1,10 @@
 module Page.Suggestions exposing (..)
 
-import Html exposing (Html, a, div, span, text)
+import Html exposing (Html, a, div, img, span, text)
 import Html.Attributes exposing (class, classList, href, title)
 import Http
 import I18n
+import Image
 import Location exposing (Location, LocationId)
 import Route
 import Suggestion
@@ -185,7 +186,7 @@ viewSuggestion zone t entry =
             , div [ class "pin", class "arr-pin" ] []
             ]
         , div [ class "info" ]
-            [ div [ class "driver-avatar" ] []
+            [ div [ class "driver-avatar" ] [ Image.avatarToImg entry.driverAvatar ]
             , div [ class "driver-info" ] [ text entry.driverName ]
             , div [ class "vehicle-info" ] [ text <| entry.vehicle.name ++ " (" ++ entry.vehicle.description ++ ")" ]
             , div [ class "conditions" ] <| viewConditions entry.smokingAllowed entry.petsAllowed entry.childrenAllowed

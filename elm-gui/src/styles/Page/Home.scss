@@ -8,20 +8,25 @@ $radius: 1.2rem;
   flex-direction: column;
 
   form {
-    width: min(100% - #{2rem}, 35rem);
+    width: min(100% - #{6rem}, 35rem);
     margin: 6rem auto auto auto;
     @include vertical(0);
     border-radius: $radius;
     box-shadow: rgba(0, 0, 0, 0.16) 0 1pt 4pt, rgba(0, 0, 0, 0.08) 0 2pt 8pt;
+
+    $field-height: 4rem;
 
     .fields {
       @include vertical(0);
       padding: 0;
       border-top-left-radius: $radius;
       border-top-right-radius: $radius;
+      background-color: #ffffff;
 
       > * {
+        flex: 1 1 auto;
         padding: 0.5rem;
+        height: $field-height;
       }
 
       > * + * {
@@ -37,16 +42,16 @@ $radius: 1.2rem;
       }
 
       .date-input {
-        height: 2em;
         font-size: 1.3em;
         border-right: 0;
         border-bottom: 0;
         border-left: 0;
-        padding-left: 0.3rem;
+        padding-left: 1rem;
+        outline: none;
       }
     }
 
-    $button-height: 2.5rem;
+    $button-height: $field-height;
 
     button {
       height: $button-height;
@@ -54,7 +59,7 @@ $radius: 1.2rem;
       border-bottom-left-radius: $radius;
       border-bottom-right-radius: $radius;
       cursor: pointer;
-      @include primaryContainer;
+      background-color: $accent-color;
 
       .search-icon {
         width: $button-height * 0.5;

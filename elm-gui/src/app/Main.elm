@@ -10,6 +10,7 @@ import Json.Encode as JE
 import Page.Home as Home
 import Page.Offer as Offer
 import Page.Suggestions as Suggestions
+import Page.User as User
 import Ports
 import Route as Route exposing (Route)
 import Task
@@ -27,22 +28,26 @@ type Model
     | Home Home.Model
     | Suggestions Suggestions.Model
     | Offer Offer.Model
+    | User User.Model
 
 
 toViewer : Model -> Viewer
-toViewer mainModel =
-    case mainModel of
+toViewer model =
+    case model of
         Redirect viewer ->
             viewer
 
-        Home model ->
-            Home.toViewer model
+        Home homeModel ->
+            Home.toViewer homeModel
 
-        Suggestions model ->
-            Suggestions.toViewer model
+        Suggestions suggestionsModel ->
+            Suggestions.toViewer suggestionsModel
 
-        Offer model ->
-            Offer.toViewer model
+        Offer offerModel ->
+            Offer.toViewer offerModel
+
+        User userModel ->
+            User.toViewer userModel
 
 
 updateViewer : Model -> Viewer -> Model
@@ -51,14 +56,17 @@ updateViewer mainModel viewer =
         Redirect _ ->
             Redirect viewer
 
-        Home model ->
-            Home <| Home.updateViewer model viewer
+        Home homeModel ->
+            Home <| Home.updateViewer homeModel viewer
 
-        Suggestions model ->
-            Suggestions <| Suggestions.updateViewer model viewer
+        Suggestions suggestionsModel ->
+            Suggestions <| Suggestions.updateViewer suggestionsModel viewer
 
-        Offer model ->
-            Offer <| Offer.updateViewer model viewer
+        Offer offerModel ->
+            Offer <| Offer.updateViewer offerModel viewer
+
+        User userModel ->
+            User <| User.updateViewer userModel viewer
 
 
 
@@ -75,6 +83,7 @@ type Msg
     | GotHomeMsg Home.Msg
     | GotSuggestionMsg Suggestions.Msg
     | GotOfferMsg Offer.Msg
+    | GotUserMsg User.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -141,6 +150,13 @@ update mainMsg mainModel =
             in
             ( Offer updatedModel, Cmd.map GotOfferMsg cmd )
 
+        ( GotUserMsg userMsg, User userModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    User.update userMsg userModel
+            in
+            ( User updatedModel, Cmd.map GotUserMsg cmd )
+
         ( _, _ ) ->
             let
                 _ =
@@ -167,6 +183,9 @@ changeModelTo maybeRoute mainModel =
 
         Just (Route.Offer offerId) ->
             mapInit Offer GotOfferMsg <| Offer.init viewer offerId
+
+        Just (Route.User id) ->
+            mapInit User GotUserMsg <| User.init viewer id
 
 
 mapInit : (subModel -> Model) -> (msg -> Msg) -> ( subModel, Cmd msg ) -> ( Model, Cmd Msg )
@@ -195,6 +214,9 @@ view mainModel =
 
                 Offer model ->
                     Html.map GotOfferMsg <| Offer.view model
+
+                User model ->
+                    Html.map GotUserMsg <| User.view model
 
         body =
             List.map (Html.map GotFromAppLayout) (AppLayout.view (AppLayout.init (toViewer mainModel)) content)

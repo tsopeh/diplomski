@@ -1,9 +1,10 @@
 module AppLayout exposing (..)
 
-import Html exposing (Html, a, footer, header, main_, option, select, text)
+import Html exposing (Html, a, div, footer, header, img, main_, option, select, text)
 import Html.Attributes exposing (class, href, selected, value)
 import Html.Events exposing (onInput)
 import I18n
+import Image
 import Route
 import Viewer exposing (Viewer)
 
@@ -25,13 +26,16 @@ view model content =
 
 viewHeader : Html (Msg msg)
 viewHeader =
-    header [] [ a [ class "logo", href (Route.routeToString Route.Home) ] [] ]
+    header []
+        [ a [ class "logo", href (Route.routeToString Route.Home) ] []
+        , div [ class "avatar" ] [ Image.avatarToImg Image.anonAvatar ]
+        ]
 
 
 viewFooter : I18n.Language -> Html (Msg msg)
 viewFooter language =
     footer []
-        [ text "footer"
+        [ div [] [ text "TruchCar©" ]
         , select [ class "select-lang", onInput LanguageChanged ] <|
             List.map
                 (\( id, name ) ->

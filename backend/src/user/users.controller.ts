@@ -1,8 +1,8 @@
 import { HttpService } from '@nestjs/axios'
-import { Controller, Post } from '@nestjs/common'
+import { Controller, Get, Param, Post } from '@nestjs/common'
 import { v4 as uuid } from 'uuid'
-import { LoginParams, SignUpUser, User } from './user'
-import { UsersService } from './users.service'
+import { LoginParams, PreviewUser, SignUpUser, User } from './user'
+import { getDefaultUserAvatarPath, UsersService } from './users.service'
 
 @Controller('user')
 export class UsersController {
@@ -11,6 +11,11 @@ export class UsersController {
     private readonly http: HttpService,
     private readonly usersService: UsersService,
   ) {}
+
+  @Get(':id')
+  offerRide (@Param('id') id: string): PreviewUser | null {
+    return this.usersService.getPreviewUser(id)
+  }
 
   @Post('signup')
   signUp (x: SignUpUser): string {
@@ -27,7 +32,8 @@ export class UsersController {
       phone: x.phone,
       driver: [],
       passenger: [],
-      avatar: 'default-user',
+      avatar: getDefaultUserAvatarPath(),
+      accountCreationDate: new Date().toISOString(),
     }
     this.usersService.storeUser(user)
     return 'success'
