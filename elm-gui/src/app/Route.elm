@@ -15,6 +15,7 @@ type Route
     | Suggestions LocationId LocationId Int
     | Offer Suggestion.SuggestionId
     | User User.UserId
+    | Login
 
 
 parser : UrlParser.Parser (Route -> a) a
@@ -24,6 +25,7 @@ parser =
         , UrlParser.map Suggestions (UrlParser.s "suggestions" </> (UrlParser.string |> UrlParser.map Location.stringToId) </> (UrlParser.string |> UrlParser.map Location.stringToId) </> UrlParser.int)
         , UrlParser.map Offer (UrlParser.s "offer" </> (UrlParser.string |> UrlParser.map Suggestion.stringToId))
         , UrlParser.map User (UrlParser.s "user" </> (UrlParser.string |> UrlParser.map User.stringToId))
+        , UrlParser.map Login (UrlParser.s "login")
         ]
 
 
@@ -41,6 +43,9 @@ routeToString route =
 
         User id ->
             UrlBuilder.absolute [ "user", User.idToString id ] []
+
+        Login ->
+            UrlBuilder.absolute [ "login" ] []
 
 
 fromUrl : Url.Url -> Maybe Route

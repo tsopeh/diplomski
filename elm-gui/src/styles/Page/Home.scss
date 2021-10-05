@@ -1,5 +1,5 @@
 @import "src/styles/utils";
-@import "src/styles/colors";
+@import "../theme";
 
 $radius: 1.2rem;
 
@@ -12,7 +12,7 @@ $radius: 1.2rem;
     margin: 6rem auto auto auto;
     @include vertical(0);
     border-radius: $radius;
-    box-shadow: rgba(0, 0, 0, 0.16) 0 1pt 4pt, rgba(0, 0, 0, 0.08) 0 2pt 8pt;
+    @include boxShadow;;
 
     $field-height: 4rem;
 
@@ -27,6 +27,7 @@ $radius: 1.2rem;
         flex: 1 1 auto;
         padding: 0.5rem;
         height: $field-height;
+        font-size: 1.3rem;
       }
 
       > * + * {
@@ -38,11 +39,11 @@ $radius: 1.2rem;
 
         input {
           outline: none;
+
         }
       }
 
       .date-input {
-        font-size: 1.3em;
         border-right: 0;
         border-bottom: 0;
         border-left: 0;

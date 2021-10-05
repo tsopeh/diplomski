@@ -1,0 +1,61 @@
+@import "../utils";
+@import "../theme";
+
+.login-page {
+  @include vertical(2rem);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+
+  form {
+    @include vertical(1.3rem);
+    padding: 4rem;
+    //@include boxShadow;
+    border-radius: 2rem;
+
+    $font-size: 1.3rem;
+
+    input {
+      height: 4rem;
+      border-radius: 2rem;
+      padding-left: 1.5rem;
+      @include boxShadow;
+      border: 2px solid transparent;
+      outline: none;
+      font-size: $font-size;
+
+      &:focus {
+        border: 2px solid $accent-color;
+      }
+    }
+
+    button {
+      height: 3rem;
+      border-radius: 2rem;
+      font-size: $font-size;
+      outline: none;
+      border: none;
+      background-color: $neutral-gray;
+      cursor: pointer;
+
+      &:hover {
+        background-color: $accent-color;
+        color: #ffffff;
+      }
+    }
+  }
+
+  a {
+    text-decoration: none;
+    color: #708c91;
+    font-size: 1rem;
+    align-self: end;
+
+    &:hover {
+      color: $primary-text-color;
+      text-decoration: underline;
+    }
+  }
+
+}

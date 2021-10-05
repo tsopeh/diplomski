@@ -1,4 +1,4 @@
-$primary-background-color: #2c6bd6;
+$primary-background-color: #ffffff;
 $primary-text-color: #054752;
 $secondary-text-color: #708c91;
 $accent-color: #00aff5;
@@ -14,7 +14,5 @@ $neutral-gray: #dddddd;
   font-weight: 400;
 }
 
-@mixin primaryContainer() {
-  background-color: $primary-background-color;
-  color: $primary-text-color;
-}
+$app-header-height: 5rem;
+$app-footer-height: 12rem;

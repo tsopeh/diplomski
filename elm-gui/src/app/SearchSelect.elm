@@ -82,6 +82,7 @@ view model =
                     String.contains (normalizeString model.search) (normalizeString op.value)
                 )
                 model.options
+                |> List.take 5
 
         search =
             case model.isFocused of

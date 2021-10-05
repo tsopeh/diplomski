@@ -1,5 +1,5 @@
-@import "src/styles/colors";
-@import "src/styles/utils";
+@import "../utils";
+@import "../theme";
 
 $hr-color: #ededed;
 
@@ -8,7 +8,7 @@ $hr-color: #ededed;
   .departure-date {
     @include primaryText;
     font-size: 2.2rem;
-    padding: 1em 2rem;
+    padding: 1rem 2rem;
   }
 
   .notice {
@@ -107,7 +107,7 @@ $hr-color: #ededed;
   }
 
   .thin-horizontal-separator {
-    padding: 0.5em 2rem;
+    padding: 0.5rem 2rem;
 
     hr {
       height: 1px;
@@ -197,8 +197,8 @@ $hr-color: #ededed;
     }
 
     &.contact {
-      color: $primary-background-color;
-      fill: $primary-background-color
+      color: $accent-color;
+      fill: $accent-color
     }
 
     &.condition {
@@ -265,7 +265,7 @@ $hr-color: #ededed;
     button {
       padding: 1rem;
       border-radius: 3rem;
-      background-color: $primary-background-color;
+      background-color: $accent-color;
       outline: none;
       border-color: transparent;
       color: #ffffff;

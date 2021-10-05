@@ -8,6 +8,7 @@ import I18n
 import Json.Decode as JD
 import Json.Encode as JE
 import Page.Home as Home
+import Page.Login as Login
 import Page.Offer as Offer
 import Page.Suggestions as Suggestions
 import Page.User as User
@@ -29,6 +30,7 @@ type Model
     | Suggestions Suggestions.Model
     | Offer Offer.Model
     | User User.Model
+    | Login Login.Model
 
 
 toViewer : Model -> Viewer
@@ -49,6 +51,9 @@ toViewer model =
         User userModel ->
             User.toViewer userModel
 
+        Login loginMOdel ->
+            Login.toViewer loginMOdel
+
 
 updateViewer : Model -> Viewer -> Model
 updateViewer mainModel viewer =
@@ -68,6 +73,9 @@ updateViewer mainModel viewer =
         User userModel ->
             User <| User.updateViewer userModel viewer
 
+        Login loginModel ->
+            Login <| Login.updateViewer loginModel viewer
+
 
 
 -- UPDATE
@@ -84,6 +92,7 @@ type Msg
     | GotSuggestionMsg Suggestions.Msg
     | GotOfferMsg Offer.Msg
     | GotUserMsg User.Msg
+    | GotLoginMsg Login.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -157,6 +166,13 @@ update mainMsg mainModel =
             in
             ( User updatedModel, Cmd.map GotUserMsg cmd )
 
+        ( GotLoginMsg loginMsg, Login loginModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    Login.update loginMsg loginModel
+            in
+            ( Login updatedModel, Cmd.map GotLoginMsg cmd )
+
         ( _, _ ) ->
             let
                 _ =
@@ -187,6 +203,9 @@ changeModelTo maybeRoute mainModel =
         Just (Route.User id) ->
             mapInit User GotUserMsg <| User.init viewer id
 
+        Just Route.Login ->
+            mapInit Login GotLoginMsg <| Login.init viewer
+
 
 mapInit : (subModel -> Model) -> (msg -> Msg) -> ( subModel, Cmd msg ) -> ( Model, Cmd Msg )
 mapInit mapModel mapMsg ( subModel, cmd ) =
@@ -206,17 +225,20 @@ view mainModel =
                 Redirect _ ->
                     Html.div [] [ Html.text "Redirecting..." ]
 
-                Home model ->
-                    Html.map GotHomeMsg <| Home.view model
+                Home homeModel ->
+                    Html.map GotHomeMsg <| Home.view homeModel
 
-                Suggestions model ->
-                    Html.map GotSuggestionMsg <| Suggestions.view model
+                Suggestions suggestionModel ->
+                    Html.map GotSuggestionMsg <| Suggestions.view suggestionModel
 
-                Offer model ->
-                    Html.map GotOfferMsg <| Offer.view model
+                Offer offerModel ->
+                    Html.map GotOfferMsg <| Offer.view offerModel
 
-                User model ->
-                    Html.map GotUserMsg <| User.view model
+                User userModel ->
+                    Html.map GotUserMsg <| User.view userModel
+
+                Login loginModel ->
+                    Html.map GotLoginMsg <| Login.view loginModel
 
         body =
             List.map (Html.map GotFromAppLayout) (AppLayout.view (AppLayout.init (toViewer mainModel)) content)

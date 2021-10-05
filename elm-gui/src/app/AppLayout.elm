@@ -1,6 +1,6 @@
 module AppLayout exposing (..)
 
-import Html exposing (Html, a, div, footer, header, img, main_, option, select, text)
+import Html exposing (Html, a, div, footer, header, main_, option, select, text)
 import Html.Attributes exposing (class, href, selected, value)
 import Html.Events exposing (onInput)
 import I18n
@@ -27,8 +27,8 @@ view model content =
 viewHeader : Html (Msg msg)
 viewHeader =
     header []
-        [ a [ class "logo", href (Route.routeToString Route.Home) ] []
-        , div [ class "avatar" ] [ Image.avatarToImg Image.anonAvatar ]
+        [ a [ class "logo", href <| Route.routeToString Route.Home ] []
+        , a [ class "avatar", href <| Route.routeToString Route.Login ] [ Image.avatarToImg Image.anonAvatar ]
         ]
 
 

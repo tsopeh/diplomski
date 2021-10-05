@@ -29,6 +29,46 @@ posixToDate zone posix =
     DateFormat.format "dd. MM. yyyy." zone posix
 
 
+toJSMonth : Time.Zone -> Time.Posix -> number
+toJSMonth zone posix =
+    case Time.toMonth zone posix of
+        Time.Jan ->
+            0
+
+        Time.Feb ->
+            1
+
+        Time.Mar ->
+            2
+
+        Time.Apr ->
+            3
+
+        Time.May ->
+            4
+
+        Time.Jun ->
+            5
+
+        Time.Jul ->
+            6
+
+        Time.Aug ->
+            7
+
+        Time.Sep ->
+            8
+
+        Time.Oct ->
+            9
+
+        Time.Nov ->
+            10
+
+        Time.Dec ->
+            11
+
+
 type Status a
     = Loading
     | Loaded a

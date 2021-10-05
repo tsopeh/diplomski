@@ -1,9 +1,10 @@
 @import url('http://fonts.cdnfonts.com/css/airbnb-cereal-app');
 
 @import "utils";
-@import "colors";
+@import "theme";
 @import "SearchSelect";
 @import "AppLayout";
+@import "Page/Login";
 @import "Page/Home";
 @import "Page/Suggestions";
 @import "Page/Offer";

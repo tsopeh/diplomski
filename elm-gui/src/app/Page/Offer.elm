@@ -1,6 +1,6 @@
 module Page.Offer exposing (..)
 
-import Html exposing (Html, a, button, div, hr, img, text)
+import Html exposing (Html, a, button, div, hr, text)
 import Html.Attributes exposing (class, href, title)
 import Html.Events exposing (onClick)
 import Http
@@ -11,7 +11,7 @@ import Suggestion
 import Svg exposing (Svg)
 import SvgIcons
 import Task
-import Utils exposing (Status(..), posixToHoursMinutes)
+import Utils exposing (Status(..))
 import Vehicle
 import Viewer exposing (Viewer)
 
@@ -77,6 +77,9 @@ view model =
 
         Loaded offer ->
             let
+                lang =
+                    Viewer.toLanguage model.viewer
+
                 zone =
                     Viewer.toZone model.viewer
 
@@ -87,14 +90,14 @@ view model =
                     (offer.numberOfSeats - List.length offer.passengers) > 0
             in
             div [ class "offer-page" ]
-                ([ div [ class "departure-date" ] [ text <| Utils.posixToDate zone offer.departureDateTime ]
+                ([ div [ class "departure-date" ] [ I18n.viewFormatedDate lang zone offer.departureDateTime ]
                  , Utils.viewIf (not areThereFreeSeats) <| div [ class "notice" ] [ SvgIcons.notice, div [] [ {- i18n -} text "No seats available" ] ]
                  , viewThickHorizontalSeparator
                  , div [ class "timeline" ]
-                    [ div [ class "dep-time" ] [ text <| posixToHoursMinutes zone offer.departureDateTime ]
+                    [ div [ class "dep-time" ] [ text <| Utils.posixToHoursMinutes zone offer.departureDateTime ]
                     , div [ class "start-name" ] [ text offer.startLocationName ]
                     , div [ class "length", title <| t I18n.TripDuration ] [ text <| offer.duration ]
-                    , div [ class "arr-time" ] [ text <| posixToHoursMinutes zone offer.arrivalDateTime ]
+                    , div [ class "arr-time" ] [ text <| Utils.posixToHoursMinutes zone offer.arrivalDateTime ]
                     , div [ class "arr-name" ] [ text offer.finishLocationName ]
                     , div [ class "pin", class "dep-pin" ] []
                     , div [ class "pipe" ] []

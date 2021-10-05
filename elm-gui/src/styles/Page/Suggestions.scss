@@ -1,5 +1,5 @@
-@import "../colors";
 @import "../utils";
+@import "../theme";
 
 $search-header-height: 4rem;
 
@@ -15,7 +15,7 @@ $search-header-height: 4rem;
   .header {
     display: flex;
     position: sticky;
-    top: 0;
+    top: $app-header-height;
     height: $search-header-height;
     padding: 0.5rem 0.5rem 0.5rem 0.5rem;
     background-color: $neutral-gray;
@@ -80,7 +80,7 @@ $search-header-height: 4rem;
       height: 10rem;
       padding: 0.5rem;
       border-radius: 1rem;
-      box-shadow: rgba(0, 0, 0, 0.16) 0 1pt 4pt, rgba(0, 0, 0, 0.08) 0 2pt 8pt;
+      @include boxShadow;;
       cursor: pointer;
 
       .timeline {

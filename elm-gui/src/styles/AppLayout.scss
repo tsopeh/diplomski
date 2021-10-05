@@ -1,4 +1,4 @@
-@import "colors";
+@import "theme";
 @import "utils";
 
 html, body {
@@ -22,18 +22,20 @@ html {
 
 }
 
-$page-header-height: 5rem;
-$page-footer-height: 12rem;
+
 
 header {
   width: 100%;
-  height: $page-header-height;
-  position: relative;
+  height: $app-header-height;
+  position: sticky;
   top: 0;
   left: 0;
   padding: 0.5rem 2rem;
   display: flex;
   align-items: center;
+  background-color: $primary-background-color;
+  border-bottom: 1px solid $neutral-gray;
+  z-index: 1;
 
   .logo {
     justify-self: center;
@@ -55,6 +57,7 @@ header {
     margin-left: auto;
     display: flex;
     align-items: center;
+    text-decoration: none;
 
     img {
       width: 3rem;
@@ -68,7 +71,7 @@ main {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  min-height: calc(100vh - #{$page-header-height + $page-footer-height * 0.5});
+  min-height: calc(100vh - #{$app-header-height + $app-footer-height * 0.5});
   width: auto;
 
   @include desktop {
@@ -78,7 +81,7 @@ main {
 }
 
 footer {
-  height: $page-footer-height;
+  height: $app-footer-height;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -87,10 +90,10 @@ footer {
   color: #ffffff;
 
   .select-lang {
-    width: 15em;
-    height: 2em;
-    font-size: 1.3em;
-    border-radius: 0.5em;
+    width: 15rem;
+    height: 2rem;
+    font-size: 1.3rem;
+    border-radius: 0.5rem;
     padding-left: 0.5rem;
     background-color: #ffffff;
   }

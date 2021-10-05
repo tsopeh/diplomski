@@ -1,6 +1,10 @@
-module I18n exposing (Language(..), Term(..), TransFn, languageDecoder, languageToIdValue, languagesIdValues, translate)
+module I18n exposing (Language(..), Term(..), TransFn, languageDecoder, languageToIdValue, languagesIdValues, translate, viewFormatedDate)
 
+import Html
+import Html.Attributes
 import Json.Decode as JD
+import Time
+import Utils
 
 
 type Language
@@ -101,10 +105,10 @@ languageDecoder =
         |> JD.andThen
             (\str ->
                 case str of
-                    Just "eng" ->
+                    Just "en-US" ->
                         JD.succeed Eng
 
-                    Just "srb-latin" ->
+                    Just "sr-RS" ->
                         JD.succeed Srb
 
                     _ ->
@@ -127,7 +131,35 @@ languageToIdValue : Language -> ( String, String )
 languageToIdValue language =
     case language of
         Eng ->
-            ( "eng", "English" )
+            ( "en-US", "English" )
 
         Srb ->
-            ( "srb-latin", "Serbian" )
+            ( "sr-RS", "Serbian" )
+
+
+
+-- HTML
+
+
+viewFormatedDate : Language -> Time.Zone -> Time.Posix -> Html.Html msg
+viewFormatedDate lang zone posix =
+    let
+        langStr =
+            Tuple.first <| languageToIdValue lang
+
+        year =
+            Time.toYear zone posix
+
+        month =
+            Utils.toJSMonth zone posix
+
+        day =
+            Time.toDay zone posix
+    in
+    Html.node "intl-date"
+        [ Html.Attributes.attribute "lang" langStr
+        , Html.Attributes.attribute "year" (String.fromInt year)
+        , Html.Attributes.attribute "month" (String.fromInt month)
+        , Html.Attributes.attribute "day" (String.fromInt day)
+        ]
+        []

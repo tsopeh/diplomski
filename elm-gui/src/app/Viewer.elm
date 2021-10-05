@@ -1,7 +1,8 @@
-module Viewer exposing (..)
+module Viewer exposing (Token, Viewer(..), decodeToken, toI18n, toLanguage, toNavKey, toZone, tokenToString, updateLanguage, updateZone)
 
 import Browser.Navigation as Nav
 import I18n
+import Json.Decode as JD
 import Time
 
 
@@ -19,6 +20,16 @@ type Viewer
 
 type Token
     = Token String
+
+
+tokenToString : Token -> String
+tokenToString (Token str) =
+    str
+
+
+decodeToken : JD.Decoder Token
+decodeToken =
+    JD.string |> JD.map Token
 
 
 toZone : Viewer -> Time.Zone

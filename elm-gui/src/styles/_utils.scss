@@ -48,6 +48,6 @@ $tablet-max-width: 768px;
   text-align: center;
 }
 
-.hidden {
-  display: none;
+@mixin boxShadow {
+  box-shadow: rgba(0, 0, 0, 0.16) 0 1pt 4pt, rgba(0, 0, 0, 0.08) 0 2pt 8pt;
 }

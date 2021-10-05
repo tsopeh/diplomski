@@ -2,6 +2,46 @@
 import { Elm } from './app/Main.elm'
 import './styles/index.scss'
 
+// region intl-date
+
+// Reference https://ellie-app.com/8yYbRQ3Hzrta1
+
+function localizeDate (lang: string | null, year: string | null, month: string | null, day: string | null) {
+  const dateTimeFormat = new Intl.DateTimeFormat(lang ?? 'eng-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+  // @ts-ignore
+  return dateTimeFormat.format(new Date(year, month, day))
+}
+
+customElements.define('intl-date',
+  class extends HTMLElement {
+    // things required by Custom Elements
+    constructor () { super() }
+
+    connectedCallback () { this.setTextContent() }
+
+    attributeChangedCallback () { this.setTextContent() }
+
+    static get observedAttributes () { return ['lang', 'year', 'month', 'day'] }
+
+    // Our function to set the textContent based on attributes.
+    setTextContent () {
+      const lang = this.getAttribute('lang') ?? null
+      const year = this.getAttribute('year') ?? null
+      const month = this.getAttribute('month') ?? null
+      const day = this.getAttribute('day') ?? null
+
+      this.textContent = localizeDate(lang, year, month, day)
+    }
+  },
+)
+
+// endregion intl-date
+
 const LANGUAGE_KEY = 'LANGUAGE_KEY'
 const TOKEN_KEY = 'TOKEN_KEY'
 const SEARCH_FORM_KEY = 'SEARCH_FORM_KEY'
