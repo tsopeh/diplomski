@@ -4,10 +4,10 @@ import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import Http
 import Image
+import State
 import Task
 import User
 import Utils exposing (Status(..))
-import Viewer exposing (Viewer)
 
 
 
@@ -15,19 +15,9 @@ import Viewer exposing (Viewer)
 
 
 type alias Model =
-    { viewer : Viewer
+    { state : State.Model
     , user : Status User.Model
     }
-
-
-toViewer : Model -> Viewer
-toViewer model =
-    model.viewer
-
-
-updateViewer : Model -> Viewer -> Model
-updateViewer model viewer =
-    { model | viewer = viewer }
 
 
 
@@ -72,10 +62,10 @@ view model =
                 Loaded user ->
                     let
                         t =
-                            Viewer.toI18n model.viewer
+                            State.toI18n model.state
 
                         zone =
-                            Viewer.toZone model.viewer
+                            model.state.timeZone
                     in
                     [ div [ class "avatar" ] [ Image.avatarToImg user.avatar ]
                     , div [ class "name" ] [ text user.firstName ]
@@ -90,10 +80,10 @@ view model =
 -- INIT
 
 
-init : Viewer -> User.UserId -> ( Model, Cmd Msg )
-init viewer id =
-    ( { viewer = viewer
+init : State.Model -> User.UserId -> ( Model, Cmd Msg )
+init state id =
+    ( { state = state
       , user = Loading
       }
-    , Task.attempt GotUser (User.getUser viewer id)
+    , Task.attempt GotUser (User.getUser state.viewer id)
     )

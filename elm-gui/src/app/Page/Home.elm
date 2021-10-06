@@ -1,4 +1,4 @@
-module Page.Home exposing (..)
+port module Page.Home exposing (..)
 
 import Html exposing (Html, button, div, form, input, text)
 import Html.Attributes exposing (class, type_, value)
@@ -10,14 +10,13 @@ import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
 import Json.Encode as JE
 import Location exposing (Location, LocationId, getAllLocations)
-import Ports
 import Route
 import SearchSelect
+import State
 import SvgIcons exposing (search)
 import Task exposing (Task)
 import Time
 import Utils exposing (Status(..), posixToIsoDate)
-import Viewer exposing (Viewer)
 
 
 
@@ -25,7 +24,7 @@ import Viewer exposing (Viewer)
 
 
 type alias Model =
-    { viewer : Viewer
+    { state : State.Model
     , locations : Status (List Location)
     , formModel : FormModel
     }
@@ -37,16 +36,6 @@ type alias FormModel =
     , departureDateTime : Time.Posix
     , problems : List String
     }
-
-
-toViewer : Model -> Viewer
-toViewer model =
-    model.viewer
-
-
-updateViewer : Model -> Viewer -> Model
-updateViewer model viewer =
-    { model | viewer = viewer }
 
 
 
@@ -120,8 +109,8 @@ update msg model =
             in
             ( model
             , Cmd.batch
-                [ Ports.persistSearchForm <| encodeForm model.formModel
-                , Route.navTo model.viewer (Route.Suggestions startId finishId dateTime)
+                [ persistSearchForm <| encodeForm model.formModel
+                , Route.navTo model.state.navKey (Route.Suggestions startId finishId dateTime)
                 ]
             )
 
@@ -195,10 +184,10 @@ update msg model =
 
 
 view : Model -> Html Msg
-view { viewer, locations, formModel } =
+view { state, locations, formModel } =
     let
         t =
-            Viewer.toI18n viewer
+            State.toI18n state
     in
     case locations of
         Loading ->
@@ -212,7 +201,7 @@ view { viewer, locations, formModel } =
                             SearchSelect.view formModel.startSelect
                         , Html.map GotFinishSelectMsg <|
                             SearchSelect.view formModel.finishSelect
-                        , viewDateTime DepartureDateTimeChanged (Viewer.toZone viewer) formModel.departureDateTime
+                        , viewDateTime DepartureDateTimeChanged state.timeZone formModel.departureDateTime
                         ]
                     , button [ type_ "submit" ] [ search ]
                     ]
@@ -241,16 +230,16 @@ viewDateTime msg zone posix =
 -- INIT
 
 
-init : Viewer -> ( Model, Cmd Msg )
-init viewer =
-    ( { viewer = viewer
+init : State.Model -> ( Model, Cmd Msg )
+init state =
+    ( { state = state
       , locations = Loading
-      , formModel = initForm (Viewer.toI18n viewer)
+      , formModel = initForm (State.toI18n state)
       }
     , Cmd.batch
         [ Task.perform GotNowTime Time.now
-        , Ports.requestSearchFormFromStorage ()
-        , Task.attempt GotLocations (getAllLocations viewer)
+        , requestSearchFormFromStorage ()
+        , Task.attempt GotLocations (getAllLocations state.viewer)
         ]
     )
 
@@ -326,3 +315,16 @@ updateFormModelWithFormPersistenceModel formModel formPersistenceModel =
         , finishSelect = { arrivalSearchSelect | selectedOption = formPersistenceModel.arrivalStationId }
         , departureDateTime = Time.millisToPosix formPersistenceModel.departureDateTime
     }
+
+
+
+-- PORTS
+
+
+port persistSearchForm : JE.Value -> Cmd msg
+
+
+port requestSearchFormFromStorage : () -> Cmd msg
+
+
+port receiveSearchFormFromStorage : (JE.Value -> msg) -> Sub msg

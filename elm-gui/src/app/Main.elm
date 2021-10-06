@@ -1,80 +1,98 @@
 module Main exposing (..)
 
+import Api
 import AppLayout
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Html
 import I18n
+import Image
 import Json.Decode as JD
 import Json.Encode as JE
 import Page.Home as Home
 import Page.Login as Login
 import Page.Offer as Offer
+import Page.Register as Register
 import Page.Suggestions as Suggestions
 import Page.User as User
-import Ports
 import Route as Route exposing (Route)
+import State
 import Task
 import Time
 import Url
-import Viewer exposing (Viewer)
+import Viewer
 
 
 
+{- TODO:
+   - 404 page
+   - Create offer page (from driver's perspective)
+   - Preview all associated drives from the Passenger's perspective and from
+     the Driver's perspective
+   - Preview Passengers contact information from offer's detailed view.
+   - Redirect user if not logged in.
+-}
 -- MODEL
 
 
 type Model
-    = Redirect Viewer
+    = Redirect State.Model
     | Home Home.Model
     | Suggestions Suggestions.Model
     | Offer Offer.Model
     | User User.Model
     | Login Login.Model
+    | Register Register.Model
 
 
-toViewer : Model -> Viewer
-toViewer model =
+toState : Model -> State.Model
+toState model =
     case model of
-        Redirect viewer ->
-            viewer
+        Redirect state ->
+            state
 
         Home homeModel ->
-            Home.toViewer homeModel
+            homeModel.state
 
         Suggestions suggestionsModel ->
-            Suggestions.toViewer suggestionsModel
+            suggestionsModel.state
 
         Offer offerModel ->
-            Offer.toViewer offerModel
+            offerModel.state
 
         User userModel ->
-            User.toViewer userModel
-
-        Login loginMOdel ->
-            Login.toViewer loginMOdel
-
-
-updateViewer : Model -> Viewer -> Model
-updateViewer mainModel viewer =
-    case mainModel of
-        Redirect _ ->
-            Redirect viewer
-
-        Home homeModel ->
-            Home <| Home.updateViewer homeModel viewer
-
-        Suggestions suggestionsModel ->
-            Suggestions <| Suggestions.updateViewer suggestionsModel viewer
-
-        Offer offerModel ->
-            Offer <| Offer.updateViewer offerModel viewer
-
-        User userModel ->
-            User <| User.updateViewer userModel viewer
+            userModel.state
 
         Login loginModel ->
-            Login <| Login.updateViewer loginModel viewer
+            loginModel.state
+
+        Register register ->
+            register.state
+
+
+updateState : Model -> State.Model -> Model
+updateState model state =
+    case model of
+        Redirect _ ->
+            Redirect state
+
+        Home homeModel ->
+            Home <| { homeModel | state = state }
+
+        Suggestions suggestionsModel ->
+            Suggestions <| { suggestionsModel | state = state }
+
+        Offer offerModel ->
+            Offer <| { offerModel | state = state }
+
+        User userModel ->
+            User <| { userModel | state = state }
+
+        Login loginModel ->
+            Login <| { loginModel | state = state }
+
+        Register register ->
+            Register <| { register | state = state }
 
 
 
@@ -85,7 +103,7 @@ type Msg
     = UrlRequested Browser.UrlRequest
     | UrlChanged Url.Url
     | LanguageChanged I18n.Language
-    | GotToken (Maybe Viewer.Token)
+    | GotToken (Maybe Api.Token)
     | GotHereZone Time.Zone
     | GotFromAppLayout (AppLayout.Msg Msg)
     | GotHomeMsg Home.Msg
@@ -93,6 +111,7 @@ type Msg
     | GotOfferMsg Offer.Msg
     | GotUserMsg User.Msg
     | GotLoginMsg Login.Msg
+    | GotRegisterMsg Register.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -103,7 +122,7 @@ update mainMsg mainModel =
                 Internal url ->
                     let
                         key =
-                            Viewer.toNavKey <| toViewer mainModel
+                            toState mainModel |> .navKey
                     in
                     ( mainModel, Nav.pushUrl key (Url.toString url) )
 
@@ -115,18 +134,21 @@ update mainMsg mainModel =
 
         ( LanguageChanged language, _ ) ->
             let
+                state =
+                    toState mainModel
+
                 updatedModel =
-                    updateViewer mainModel (Viewer.updateLanguage (toViewer mainModel) language)
+                    updateState mainModel { state | language = language }
             in
             ( updatedModel, Cmd.none )
 
         ( GotHereZone zone, _ ) ->
             let
-                viewer =
-                    toViewer mainModel
+                state =
+                    toState mainModel
 
                 updated =
-                    updateViewer mainModel <| Viewer.updateZone viewer zone
+                    updateState mainModel <| { state | timeZone = zone }
             in
             ( updated, Cmd.none )
 
@@ -136,7 +158,17 @@ update mainMsg mainModel =
                     update contentMsg mainModel
 
                 AppLayout.LanguageChanged languageStringId ->
-                    ( mainModel, Ports.persistLanguage languageStringId )
+                    ( mainModel, I18n.persistLanguage languageStringId )
+
+        ( GotToken maybeToken, _ ) ->
+            let
+                state =
+                    toState mainModel
+
+                updatedModel =
+                    updateState mainModel { state | viewer = Viewer.createViewer Image.guestAvatar maybeToken }
+            in
+            ( updatedModel, Route.navTo state.navKey Route.Home )
 
         ( GotHomeMsg msg, Home model ) ->
             let
@@ -173,6 +205,13 @@ update mainMsg mainModel =
             in
             ( Login updatedModel, Cmd.map GotLoginMsg cmd )
 
+        ( GotRegisterMsg registerMsg, Register registerModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    Register.update registerMsg registerModel
+            in
+            ( Register updatedModel, Cmd.map GotRegisterMsg cmd )
+
         ( _, _ ) ->
             let
                 _ =
@@ -184,27 +223,33 @@ update mainMsg mainModel =
 changeModelTo : Maybe Route -> Model -> ( Model, Cmd Msg )
 changeModelTo maybeRoute mainModel =
     let
-        viewer =
-            toViewer mainModel
+        state =
+            toState mainModel
     in
     case maybeRoute of
         Nothing ->
-            ( mainModel, Route.navTo viewer Route.Home )
+            ( mainModel, Route.navTo state.navKey Route.Home )
 
         Just Route.Home ->
-            mapInit Home GotHomeMsg <| Home.init viewer
+            mapInit Home GotHomeMsg <| Home.init state
 
         Just (Route.Suggestions startId finishId depDateTime) ->
-            mapInit Suggestions GotSuggestionMsg <| Suggestions.init viewer startId finishId (Time.millisToPosix depDateTime)
+            mapInit Suggestions GotSuggestionMsg <| Suggestions.init state startId finishId (Time.millisToPosix depDateTime)
 
         Just (Route.Offer offerId) ->
-            mapInit Offer GotOfferMsg <| Offer.init viewer offerId
+            mapInit Offer GotOfferMsg <| Offer.init state offerId
 
         Just (Route.User id) ->
-            mapInit User GotUserMsg <| User.init viewer id
+            mapInit User GotUserMsg <| User.init state id
 
         Just Route.Login ->
-            mapInit Login GotLoginMsg <| Login.init viewer
+            mapInit Login GotLoginMsg <| Login.init state
+
+        Just Route.Logout ->
+            ( Redirect state, Api.logout )
+
+        Just Route.Register ->
+            mapInit Register GotRegisterMsg <| Register.init state
 
 
 mapInit : (subModel -> Model) -> (msg -> Msg) -> ( subModel, Cmd msg ) -> ( Model, Cmd Msg )
@@ -240,8 +285,11 @@ view mainModel =
                 Login loginModel ->
                     Html.map GotLoginMsg <| Login.view loginModel
 
+                Register registerModel ->
+                    Html.map GotRegisterMsg <| Register.view registerModel
+
         body =
-            List.map (Html.map GotFromAppLayout) (AppLayout.view (AppLayout.init (toViewer mainModel)) content)
+            List.map (Html.map GotFromAppLayout) (AppLayout.view (AppLayout.init (toState mainModel)) content)
     in
     { title = "Title"
     , body = body
@@ -267,12 +315,15 @@ subscriptions model =
                             I18n.Eng
             in
             LanguageChanged language
+
+        updateToken : JE.Value -> Msg
+        updateToken raw =
+            GotToken (JD.decodeValue Api.decodeToken raw |> Result.toMaybe)
     in
     Sub.batch
-        [ Sub.map GotHomeMsg (Ports.receiveSearchFormFromStorage Home.GotFormFromStorage)
-        , Ports.languageChanged updateLang
-
-        -- , Ports.tokenChanged GotToken
+        [ Sub.map GotHomeMsg (Home.receiveSearchFormFromStorage Home.GotFormFromStorage)
+        , I18n.languageChanged updateLang
+        , Api.tokenChanged updateToken
         ]
 
 
@@ -296,9 +347,16 @@ init flags url key =
                     in
                     I18n.Eng
 
-        viewer : Viewer
+        maybeToken =
+            JD.decodeValue (JD.field "token" Api.decodeToken) flags |> Result.toMaybe
+
+        viewer : State.Model
         viewer =
-            Viewer.Anon { navKey = key, timeZone = Time.utc, language = language }
+            { viewer = Viewer.createViewer Image.guestAvatar maybeToken
+            , navKey = key
+            , timeZone = Time.utc
+            , language = language
+            }
 
         ( model, cmd ) =
             changeModelTo (Route.fromUrl url) <| Redirect viewer

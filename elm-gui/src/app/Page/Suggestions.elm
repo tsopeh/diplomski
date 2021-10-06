@@ -1,18 +1,18 @@
 module Page.Suggestions exposing (..)
 
-import Html exposing (Html, a, div, img, span, text)
-import Html.Attributes exposing (class, classList, href, title)
+import Html exposing (Html, a, div, span, text)
+import Html.Attributes exposing (class, href, title)
 import Http
 import I18n
 import Image
 import Location exposing (Location, LocationId)
 import Route
+import State
 import Suggestion
 import SvgIcons exposing (rightArrow, search)
 import Task
 import Time
 import Utils exposing (Status(..), posixToDate, posixToHoursMinutes)
-import Viewer exposing (Viewer)
 
 
 
@@ -20,22 +20,12 @@ import Viewer exposing (Viewer)
 
 
 type alias Model =
-    { viewer : Viewer
+    { state : State.Model
     , startLocation : Status Location
     , finishLocation : Status Location
     , departureDateTime : Time.Posix
     , suggestions : Status (List Suggestion.Model)
     }
-
-
-toViewer : Model -> Viewer
-toViewer model =
-    model.viewer
-
-
-updateViewer : Model -> Viewer -> Model
-updateViewer model viewer =
-    { model | viewer = viewer }
 
 
 
@@ -96,7 +86,7 @@ view : Model -> Html Msg
 view model =
     let
         t =
-            Viewer.toI18n model.viewer
+            State.toI18n model.state
 
         departureStation : Maybe Location
         departureStation =
@@ -124,20 +114,20 @@ view model =
 
                 Loaded suggestions ->
                     List.map
-                        (\entry -> viewSuggestion (Viewer.toZone model.viewer) t entry)
+                        (\entry -> viewSuggestion model.state.timeZone t entry)
                         suggestions
 
                 Failed ->
                     [ text <| t I18n.FailedToLoadSuggestions ]
     in
     div [ class "suggestions-page" ]
-        [ viewHeader model.viewer ( departureStation, arrivalStation ) model.departureDateTime
+        [ viewHeader model.state.timeZone ( departureStation, arrivalStation ) model.departureDateTime
         , div [ class "schedules" ] suggestionsHtml
         ]
 
 
-viewHeader : Viewer -> ( Maybe Location, Maybe Location ) -> Time.Posix -> Html Msg
-viewHeader viewer ( departure, arrival ) dateTime =
+viewHeader : Time.Zone -> ( Maybe Location, Maybe Location ) -> Time.Posix -> Html Msg
+viewHeader zone ( departure, arrival ) dateTime =
     let
         departureHtml : Html Msg
         departureHtml =
@@ -166,7 +156,7 @@ viewHeader viewer ( departure, arrival ) dateTime =
                     , rightArrow
                     , span [] [ arrivalHtml ]
                     ]
-                , div [ class "date" ] [ text <| posixToDate (Viewer.toZone viewer) dateTime ]
+                , div [ class "date" ] [ text <| posixToDate zone dateTime ]
                 ]
             ]
         ]
@@ -189,15 +179,15 @@ viewSuggestion zone t entry =
             [ div [ class "driver-avatar" ] [ Image.avatarToImg entry.driverAvatar ]
             , div [ class "driver-info" ] [ text entry.driverName ]
             , div [ class "vehicle-info" ] [ text <| entry.vehicle.name ++ " (" ++ entry.vehicle.description ++ ")" ]
-            , div [ class "conditions" ] <| viewConditions entry.smokingAllowed entry.petsAllowed entry.childrenAllowed
+            , div [ class "conditions" ] <| viewConditions entry.smokingAllowed entry.petsAllowed
             , div [ class "seats" ] <| viewSeats entry.numberOfSeats entry.numberOfFreeSeats
             , div [ class "price" ] [ text <| entry.price ]
             ]
         ]
 
 
-viewConditions : Bool -> Bool -> Bool -> List (Html Msg)
-viewConditions smoking pets children =
+viewConditions : Bool -> Bool -> List (Html Msg)
+viewConditions smoking pets =
     [ div [ class "condition" ] [ SvgIcons.smoking smoking ]
     , div [ class "condition" ] [ SvgIcons.pets pets ]
     ]
@@ -222,14 +212,14 @@ viewSeats seats freeSeats =
 -- INIT
 
 
-init : Viewer -> LocationId -> LocationId -> Time.Posix -> ( Model, Cmd Msg )
-init viewer depStationId arrStationId depDateTime =
-    ( Model viewer Loading Loading depDateTime Loading
+init : State.Model -> LocationId -> LocationId -> Time.Posix -> ( Model, Cmd Msg )
+init state depStationId arrStationId depDateTime =
+    ( Model state Loading Loading depDateTime Loading
     , Cmd.batch
-        [ Task.attempt GotDepartureStation <| Location.getLocation viewer depStationId
-        , Task.attempt GotArrivalStation <| Location.getLocation viewer arrStationId
+        [ Task.attempt GotDepartureStation <| Location.getLocation state.viewer depStationId
+        , Task.attempt GotArrivalStation <| Location.getLocation state.viewer arrStationId
         , Task.attempt GotSuggestions
-            (Suggestion.getSuggestions viewer
+            (Suggestion.getSuggestions state.viewer
                 { startStation = depStationId
                 , finishStationId = arrStationId
                 , departureDateTime = depDateTime

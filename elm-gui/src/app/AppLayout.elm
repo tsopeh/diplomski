@@ -6,11 +6,12 @@ import Html.Events exposing (onInput)
 import I18n
 import Image
 import Route
-import Viewer exposing (Viewer)
+import State
+import Viewer
 
 
 type alias Model =
-    { viewer : Viewer
+    { state : State.Model
     }
 
 
@@ -21,14 +22,22 @@ type Msg msg
 
 view : Model -> Html msg -> List (Html (Msg msg))
 view model content =
-    viewHeader :: main_ [] [ Html.map GotFromContent content ] :: [ viewFooter (Viewer.toLanguage model.viewer) ]
+    viewHeader model :: main_ [] [ Html.map GotFromContent content ] :: [ viewFooter model.state.language ]
 
 
-viewHeader : Html (Msg msg)
-viewHeader =
+viewHeader : Model -> Html (Msg msg)
+viewHeader model =
+    let
+        url =
+            if Viewer.isAuthenticated model.state.viewer then
+                Route.routeToString Route.Logout
+
+            else
+                Route.routeToString Route.Login
+    in
     header []
         [ a [ class "logo", href <| Route.routeToString Route.Home ] []
-        , a [ class "avatar", href <| Route.routeToString Route.Login ] [ Image.avatarToImg Image.anonAvatar ]
+        , a [ class "avatar", href <| url ] [ Image.avatarToImg Image.guestAvatar ]
         ]
 
 
@@ -53,7 +62,7 @@ viewFooter language =
 -- INIT
 
 
-init : Viewer -> Model
-init viewer =
-    { viewer = viewer
+init : State.Model -> Model
+init state =
+    { state = state
     }

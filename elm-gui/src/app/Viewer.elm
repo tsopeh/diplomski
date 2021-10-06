@@ -1,87 +1,69 @@
-module Viewer exposing (Token, Viewer(..), decodeToken, toI18n, toLanguage, toNavKey, toZone, tokenToString, updateLanguage, updateZone)
+module Viewer exposing (Model, createViewer, isAuthenticated, toAvatar, toToken)
 
-import Browser.Navigation as Nav
-import I18n
-import Json.Decode as JD
-import Time
+import Api
+import Image
 
 
-type alias State =
-    { navKey : Nav.Key
-    , timeZone : Time.Zone
-    , language : I18n.Language
-    }
+type Model
+    = Guest
+        { avatar : Image.Avatar
+        }
+    | LoggedIn
+        { token : Api.Token
+        , avatar : Image.Avatar
+        }
 
 
-type Viewer
-    = Anon State
-    | LoggedIn State Token
+createGuest : Image.Avatar -> Model
+createGuest avatar =
+    Guest
+        { avatar = avatar
+        }
 
 
-type Token
-    = Token String
+createLoggedIn : Image.Avatar -> Api.Token -> Model
+createLoggedIn avatar token =
+    LoggedIn
+        { avatar = avatar
+        , token = token
+        }
 
 
-tokenToString : Token -> String
-tokenToString (Token str) =
-    str
+createViewer : Image.Avatar -> Maybe Api.Token -> Model
+createViewer avatar maybeToken =
+    case maybeToken of
+        Just token ->
+            createLoggedIn avatar token
+
+        Nothing ->
+            createGuest avatar
 
 
-decodeToken : JD.Decoder Token
-decodeToken =
-    JD.string |> JD.map Token
-
-
-toZone : Viewer -> Time.Zone
-toZone viewer =
+isAuthenticated : Model -> Bool
+isAuthenticated viewer =
     case viewer of
-        Anon state ->
-            state.timeZone
+        Guest _ ->
+            False
 
-        LoggedIn state _ ->
-            state.timeZone
-
-
-updateZone : Viewer -> Time.Zone -> Viewer
-updateZone viewer zone =
-    case viewer of
-        Anon state ->
-            Anon { state | timeZone = zone }
-
-        LoggedIn state token ->
-            LoggedIn { state | timeZone = zone } token
+        LoggedIn _ ->
+            True
 
 
-toNavKey : Viewer -> Nav.Key
-toNavKey viewer =
-    case viewer of
-        Anon state ->
-            state.navKey
+toToken : Model -> Maybe Api.Token
+toToken model =
+    case model of
+        Guest _ ->
+            Nothing
 
-        LoggedIn state _ ->
-            state.navKey
-
-
-toLanguage : Viewer -> I18n.Language
-toLanguage viewer =
-    case viewer of
-        Anon state ->
-            state.language
-
-        LoggedIn state _ ->
-            state.language
+        LoggedIn data ->
+            Just data.token
 
 
-updateLanguage : Viewer -> I18n.Language -> Viewer
-updateLanguage viewer language =
-    case viewer of
-        Anon state ->
-            Anon { state | language = language }
+toAvatar : Model -> Image.Avatar
+toAvatar model =
+    case model of
+        Guest data ->
+            data.avatar
 
-        LoggedIn state token ->
-            LoggedIn { state | language = language } token
-
-
-toI18n : Viewer -> I18n.TransFn
-toI18n viewer =
-    I18n.translate <| toLanguage viewer
+        LoggedIn data ->
+            data.avatar

@@ -1,6 +1,6 @@
 module Offer exposing (..)
 
-import Api exposing (createRequestHeaders, handleJsonResponse)
+import Api exposing (handleJsonResponse)
 import Http
 import Image
 import Iso8601
@@ -10,7 +10,7 @@ import Suggestion exposing (SuggestionId)
 import Task exposing (Task)
 import Time
 import Vehicle
-import Viewer exposing (Viewer)
+import Viewer
 
 
 type alias Model =
@@ -84,12 +84,12 @@ driverDecoder =
         |> JDP.required "phone" JD.string
 
 
-getOffer : Viewer -> SuggestionId -> Task Http.Error Model
+getOffer : Viewer.Model -> SuggestionId -> Task Http.Error Model
 getOffer viewer id =
     Http.task
         { method = "GET"
         , url = Api.getApiUrl [ "rides", "offer", Suggestion.idToString id ] []
-        , headers = createRequestHeaders viewer
+        , headers = Api.createRequestHeaders (Viewer.toToken viewer)
         , body = Http.emptyBody
         , timeout = Nothing
         , resolver = Http.stringResolver <| handleJsonResponse <| decoder

@@ -1,4 +1,4 @@
-module I18n exposing (Language(..), Term(..), TransFn, languageDecoder, languageToIdValue, languagesIdValues, translate, viewFormatedDate)
+port module I18n exposing (Language(..), Term(..), TransFn, languageChanged, languageDecoder, languageToIdValue, languagesIdValues, persistLanguage, translate, viewFormatedDate)
 
 import Html
 import Html.Attributes
@@ -163,3 +163,13 @@ viewFormatedDate lang zone posix =
         , Html.Attributes.attribute "day" (String.fromInt day)
         ]
         []
+
+
+
+-- PORTS
+
+
+port persistLanguage : String -> Cmd msg
+
+
+port languageChanged : (JD.Value -> msg) -> Sub msg

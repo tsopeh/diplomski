@@ -3,12 +3,12 @@ import { Location } from './location'
 
 const MOCK_PLACES: Array<Location> = [
   {
-    id: 'Nish',
-    name: 'Nish',
+    id: 'Niš',
+    name: 'Niš',
   },
   {
-    id: 'Belgrade',
-    name: 'Belgrade',
+    id: 'Beograd',
+    name: 'Beograd',
   },
   {
     id: 'Novi Sad',

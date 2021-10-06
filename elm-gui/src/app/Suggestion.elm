@@ -10,7 +10,7 @@ import Location exposing (LocationId)
 import Task exposing (Task)
 import Time
 import Vehicle
-import Viewer exposing (Viewer)
+import Viewer
 
 
 type SuggestionId
@@ -73,7 +73,7 @@ type alias GetSuggestionsParams =
     }
 
 
-getSuggestions : Viewer -> GetSuggestionsParams -> Task Http.Error (List Model)
+getSuggestions : Viewer.Model -> GetSuggestionsParams -> Task Http.Error (List Model)
 getSuggestions viewer { startStation, finishStationId, departureDateTime } =
     Http.task
         { method = "GET"
@@ -87,7 +87,7 @@ getSuggestions viewer { startStation, finishStationId, departureDateTime } =
                 ]
                 []
         , body = Http.emptyBody
-        , headers = Api.createRequestHeaders viewer
+        , headers = Api.createRequestHeaders (Viewer.toToken viewer)
         , timeout = Nothing
         , resolver = Http.stringResolver <| Api.handleJsonResponse <| JD.list decoder
         }

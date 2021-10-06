@@ -115,6 +115,6 @@ export class UsersService {
 }
 
 export function getDefaultUserAvatarPath (): string {
-  return 'avatars/anon-avatar-128.png'
+  return 'avatars/user-avatar-512.png'
 }
 

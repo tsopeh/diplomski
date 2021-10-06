@@ -1,4 +1,4 @@
-module Image exposing (Avatar, anonAvatar, avatarToImg, avatarToSrc, decoder)
+module Image exposing (Avatar, avatarToImg, avatarToSrc, decoder, guestAvatar)
 
 import Api
 import Html
@@ -29,6 +29,6 @@ decoder =
 -- AVATARS
 
 
-anonAvatar : Avatar
-anonAvatar =
-    Avatar "avatars/anon-avatar-128.png"
+guestAvatar : Avatar
+guestAvatar =
+    Avatar "avatars/guest-avatar-512.png"

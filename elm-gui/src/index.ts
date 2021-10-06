@@ -90,29 +90,30 @@ app.ports.requestSearchFormFromStorage.subscribe(() => {
   app.ports.receiveSearchFormFromStorage.send(formModel)
 })
 
-// const onTokenChange = () => {
-//   app.ports.tokenChanged.send(readStorage())
-// }
-//
-// app.ports.persistToken.subscribe((token: string | null) => {
-//   if (token == null) {
-//     localStorage.removeItem(TOKEN_KEY)
-//   } else {
-//     localStorage.setItem(TOKEN_KEY, token)
-//   }
-//   setTimeout(() => {
-//     onTokenChange()
-//   }, 0)
-// })
-//
-// window.addEventListener('storage', function (event) {
-//   if (event.storageArea == localStorage && event.key == TOKEN_KEY) {
-//     onTokenChange()
-//   }
-// })
+app.ports.persistToken.subscribe((token: string | null) => {
+  console.log('persistToken', token)
+  if (token == null) {
+    localStorage.removeItem(TOKEN_KEY)
+  } else {
+    localStorage.setItem(TOKEN_KEY, token)
+  }
+  setTimeout(() => {
+    sendTokenToElm()
+  }, 0)
+})
+
+window.addEventListener('storage', function (event) {
+  if (event.storageArea == localStorage && event.key == TOKEN_KEY) {
+    sendTokenToElm()
+  }
+})
 
 function readToken (): string | null {
   return localStorage.getItem(TOKEN_KEY) ?? null
+}
+
+const sendTokenToElm = () => {
+  app.ports.tokenChanged.send(readToken())
 }
 
 function readLanguage (): string | null {

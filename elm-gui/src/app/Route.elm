@@ -7,7 +7,6 @@ import Url
 import Url.Builder as UrlBuilder
 import Url.Parser as UrlParser exposing ((</>))
 import User
-import Viewer exposing (Viewer)
 
 
 type Route
@@ -16,6 +15,8 @@ type Route
     | Offer Suggestion.SuggestionId
     | User User.UserId
     | Login
+    | Logout
+    | Register
 
 
 parser : UrlParser.Parser (Route -> a) a
@@ -26,6 +27,8 @@ parser =
         , UrlParser.map Offer (UrlParser.s "offer" </> (UrlParser.string |> UrlParser.map Suggestion.stringToId))
         , UrlParser.map User (UrlParser.s "user" </> (UrlParser.string |> UrlParser.map User.stringToId))
         , UrlParser.map Login (UrlParser.s "login")
+        , UrlParser.map Logout (UrlParser.s "logout")
+        , UrlParser.map Register (UrlParser.s "register")
         ]
 
 
@@ -47,15 +50,21 @@ routeToString route =
         Login ->
             UrlBuilder.absolute [ "login" ] []
 
+        Logout ->
+            UrlBuilder.absolute [ "logout" ] []
+
+        Register ->
+            UrlBuilder.absolute [ "register" ] []
+
 
 fromUrl : Url.Url -> Maybe Route
 fromUrl url =
     UrlParser.parse parser url
 
 
-navTo : Viewer -> Route -> Cmd msg
-navTo viewer route =
-    Nav.pushUrl (Viewer.toNavKey viewer) (routeToString route)
+navTo : Nav.Key -> Route -> Cmd msg
+navTo navKey route =
+    Nav.pushUrl navKey (routeToString route)
 
 
 navToWithoutHistory : Nav.Key -> Route -> Cmd msg

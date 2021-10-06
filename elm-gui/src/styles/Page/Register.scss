@@ -1,7 +1,7 @@
 @import "../utils";
 @import "../theme";
 
-.login-page {
+.register-page {
   @include vertical(2rem);
   justify-content: center;
   align-items: center;
@@ -39,6 +39,15 @@
       &:focus {
         border: 2px solid $accent-color;
       }
+    }
+
+    select {
+      background-color: #ffffff;
+    }
+
+    .date-of-birth {
+      @include horizontal(1rem);
+
     }
 
     button {

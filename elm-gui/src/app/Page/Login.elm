@@ -1,11 +1,14 @@
 module Page.Login exposing (..)
 
-import Html exposing (Html, a, button, div, form, input, text)
-import Html.Attributes exposing (class, href, placeholder, type_, value)
+import Api
+import Form as F
+import Html exposing (Html, a, button, div, form, h1, input, text)
+import Html.Attributes exposing (class, href, name, placeholder, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 import Http
-import Ports
-import Viewer exposing (Token, Viewer)
+import Route
+import State
+import Task exposing (Task)
 
 
 
@@ -13,21 +16,11 @@ import Viewer exposing (Token, Viewer)
 
 
 type alias Model =
-    { viewer : Viewer
+    { state : State.Model
     , email : String
     , password : String
     , problems : List String
     }
-
-
-toViewer : Model -> Viewer
-toViewer model =
-    model.viewer
-
-
-updateViewer : Model -> Viewer -> Model
-updateViewer model viewer =
-    { model | viewer = viewer }
 
 
 
@@ -38,7 +31,7 @@ type Msg
     = EmailChanged String
     | PasswordChanged String
     | Submit
-    | GotToken (Result Http.Error Token)
+    | GotToken (Result Http.Error Api.Token)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -51,12 +44,12 @@ update msg model =
             ( { model | password = password }, Cmd.none )
 
         Submit ->
-            ( model, Debug.todo "try login" )
+            ( model, Task.attempt GotToken <| Api.login { email = model.email, password = model.password } )
 
         GotToken res ->
             case res of
                 Ok token ->
-                    ( model, Ports.persistToken (Viewer.tokenToString token) )
+                    ( model, Api.persistToken (Just <| Api.tokenToString token) )
 
                 Err err ->
                     case err of
@@ -75,25 +68,28 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div [ class "login-page" ]
-        [ form [ onSubmit Submit ]
-            [ input
-                [ type_ "email"
-                , {- i18n -} placeholder "E-mail"
-                , value model.email
-                , onInput EmailChanged
-                ]
-                []
-            , input
-                [ type_ "password"
-                , {- i18n -} placeholder "Password"
-                , value model.password
-                , onInput PasswordChanged
-                ]
-                []
+        [ h1 [] [ {- i18n -} text "Log in" ]
+        , form [ onSubmit Submit ]
+            [ F.viewInput
+                { type_ = "email"
+                , name = "email"
+                , placeholder = {- i18n -} "E-mail"
+                , label = {- i18n -} "E-mail"
+                , value = model.email
+                , onInput = EmailChanged
+                }
+            , F.viewInput
+                { type_ = "password"
+                , name = "password"
+                , placeholder = {- i18n -} "Password"
+                , label = {- i18n -} "Password"
+                , value = model.password
+                , onInput = PasswordChanged
+                }
             , button [ type_ "submit" ] [ {- i18n -} text "Login" ]
             ]
+        , a [ class "alternative", href (Route.routeToString Route.Register) ] [ {- i18n -} text "Don't have an account? Register here." ]
         , a [ class "alternative", href "" ] [ {- i18n -} text "Did you forget your password? Let's reset it." ]
-        , a [ class "alternative", href "" ] [ {- i18n -} text "Already have an account? Log in." ]
         ]
 
 
@@ -101,12 +97,22 @@ view model =
 -- INIT
 
 
-init : Viewer -> ( Model, Cmd Msg )
-init viewer =
-    ( { viewer = viewer
+init : State.Model -> ( Model, Cmd Msg )
+init state =
+    ( { state = state
       , email = ""
       , password = ""
       , problems = []
       }
     , Cmd.none
     )
+
+
+
+-- HTTP
+
+
+type alias PostLoginModel =
+    { email : String
+    , password : String
+    }

@@ -7,13 +7,13 @@ import Http
 import I18n
 import Image
 import Offer
+import State
 import Suggestion
 import Svg exposing (Svg)
 import SvgIcons
 import Task
 import Utils exposing (Status(..))
 import Vehicle
-import Viewer exposing (Viewer)
 
 
 
@@ -21,19 +21,9 @@ import Viewer exposing (Viewer)
 
 
 type alias Model =
-    { viewer : Viewer
+    { state : State.Model
     , offer : Status Offer.Model
     }
-
-
-toViewer : Model -> Viewer
-toViewer model =
-    model.viewer
-
-
-updateViewer : Model -> Viewer -> Model
-updateViewer model viewer =
-    { model | viewer = viewer }
 
 
 
@@ -78,13 +68,13 @@ view model =
         Loaded offer ->
             let
                 lang =
-                    Viewer.toLanguage model.viewer
+                    model.state.language
 
                 zone =
-                    Viewer.toZone model.viewer
+                    model.state.timeZone
 
                 t =
-                    Viewer.toI18n model.viewer
+                    State.toI18n model.state
 
                 areThereFreeSeats =
                     (offer.numberOfSeats - List.length offer.passengers) > 0
@@ -215,10 +205,10 @@ viewConfirmation =
 -- INIT
 
 
-init : Viewer -> Suggestion.SuggestionId -> ( Model, Cmd Msg )
-init viewer id =
-    ( { viewer = viewer
+init : State.Model -> Suggestion.SuggestionId -> ( Model, Cmd Msg )
+init state id =
+    ( { state = state
       , offer = Loading
       }
-    , Task.attempt GotOffer (Offer.getOffer viewer id)
+    , Task.attempt GotOffer (Offer.getOffer state.viewer id)
     )
