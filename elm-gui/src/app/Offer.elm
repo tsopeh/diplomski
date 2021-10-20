@@ -47,6 +47,11 @@ type alias Passenger =
     }
 
 
+hasFreeSeats : Model -> Bool
+hasFreeSeats model =
+    (model.numberOfSeats - List.length model.passengers) > 0
+
+
 decoder : JD.Decoder Model
 decoder =
     JD.succeed Model

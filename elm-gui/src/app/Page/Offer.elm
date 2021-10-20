@@ -77,7 +77,7 @@ view model =
                     State.toI18n model.state
 
                 areThereFreeSeats =
-                    (offer.numberOfSeats - List.length offer.passengers) > 0
+                    Offer.hasFreeSeats offer
             in
             div [ class "offer-page" ]
                 ([ div [ class "departure-date" ] [ I18n.viewFormatedDate lang zone offer.departureDateTime ]
