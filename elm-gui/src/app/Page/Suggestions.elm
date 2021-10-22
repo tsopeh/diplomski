@@ -148,7 +148,7 @@ viewHeader zone ( departure, arrival ) dateTime =
                     text station.name
     in
     div [ class "header" ]
-        [ a [ href "../" ]
+        [ a [ href (Route.routeToString Route.Home) ]
             [ div [ class "icon-container" ] [ search ]
             , div [ class "info" ]
                 [ div [ class "route" ]
@@ -162,7 +162,7 @@ viewHeader zone ( departure, arrival ) dateTime =
         ]
 
 
-viewSuggestion : Time.Zone -> I18n.TransFn -> Suggestion.Model -> Html Msg
+viewSuggestion : Time.Zone -> I18n.TranslationFn -> Suggestion.Model -> Html Msg
 viewSuggestion zone t entry =
     a [ class "entry", href <| Route.routeToString (Route.Offer entry.id) ]
         [ div [ class "timeline" ]

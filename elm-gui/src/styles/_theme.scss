@@ -3,6 +3,7 @@ $primary-text-color: #054752;
 $secondary-text-color: #708c91;
 $accent-color: #00aff5;
 $neutral-gray: #dddddd;
+$red: #dc143c;
 
 @mixin primaryText() {
   color: $primary-text-color;

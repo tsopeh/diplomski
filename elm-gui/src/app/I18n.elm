@@ -1,4 +1,4 @@
-port module I18n exposing (Language(..), Term(..), TransFn, languageChanged, languageDecoder, languageToIdValue, languagesIdValues, persistLanguage, translate, viewFormatedDate)
+port module I18n exposing (Language(..), Term(..), TranslationFn, languageChanged, languageDecoder, languageToIdValue, languagesIdValues, persistLanguage, translate, viewFormatedDate)
 
 import Html
 import Html.Attributes
@@ -15,6 +15,7 @@ type Language
 type Term
     = -- MAIN
       DefaultAppTitle
+    | Trademark
     | Redirecting
       -- HOME
     | LoadingLocations
@@ -24,21 +25,72 @@ type Term
       -- SUGGESTIONS
     | LoadingSuggestions
     | FailedToLoadSuggestions
+      -- LOGIN
+    | Login
+    | Email
+    | Password
+    | RegisterHere
+    | ResetPassword
+      -- REGISTER
+    | Register
+    | FirstName
+    | LastName
+    | Phone
+    | Gender
+    | Male
+    | Female
+    | Other
+    | Day
+    | Month
+    | Year
+    | CreateAccount
+    | LoginHere
+      -- User
+    | LoadingUser
+    | FailedToLoadUser
+    | CompletedDrives Int
+    | MemberSince String
+      -- NOT FOUND
+    | TakeMeToHomePage
+      -- OFFER
+    | LoadingOffer
+    | FailedLoadingOffer
+    | NoSeatsAvailable
+    | PriceForSinglePerson
+    | SmokingIsAllowed
+    | SmokingIsNotAllowed
+    | PetsAreAllowed
+    | PetsAreNotAllowed
+    | PassengersSubtitle
+    | You
+    | DriverTagline
+    | ContactYourDriver
+    | BeTheFirstPassenger
+    | ContactThePassenger
+    | Reserve
+    | Cancel
     | TripDuration
 
 
-type alias TransFn =
+
+-- OFFER
+
+
+type alias TranslationFn =
     Term -> String
 
 
-translate : Language -> TransFn
+translate : Language -> TranslationFn
 translate lang term =
     case lang of
         Eng ->
             case term of
                 -- MAIN
                 DefaultAppTitle ->
-                    "Truch Car"
+                    "TruchCar"
+
+                Trademark ->
+                    "TruchCar©"
 
                 Redirecting ->
                     "Redirecting..."
@@ -63,6 +115,128 @@ translate lang term =
                 FailedToLoadSuggestions ->
                     "Failed to load schedules."
 
+                -- LOGIN
+                Login ->
+                    "Log in"
+
+                Email ->
+                    "Email"
+
+                Password ->
+                    "Password"
+
+                RegisterHere ->
+                    "Don't have an account? Register here."
+
+                ResetPassword ->
+                    "Did you forget your password? Let's reset it."
+
+                -- REGISTER
+                Register ->
+                    "Create a new account"
+
+                FirstName ->
+                    "First name"
+
+                LastName ->
+                    "Last name"
+
+                Phone ->
+                    "Phone number"
+
+                Gender ->
+                    "Gender"
+
+                Male ->
+                    "Male"
+
+                Female ->
+                    "Female"
+
+                Other ->
+                    "Other"
+
+                Day ->
+                    "Day"
+
+                Month ->
+                    "Month"
+
+                Year ->
+                    "Year"
+
+                CreateAccount ->
+                    "Create account"
+
+                LoginHere ->
+                    "Already have an account? Log in here."
+
+                -- User
+                LoadingUser ->
+                    "Loading user..."
+
+                FailedToLoadUser ->
+                    "Failed to load user."
+
+                CompletedDrives count ->
+                    "Completed " ++ String.fromInt count ++ " drives."
+
+                MemberSince date ->
+                    "Member since " ++ date
+
+                -- NOT FOUND
+                TakeMeToHomePage ->
+                    "Take me to the home page."
+
+                -- OFFER
+                LoadingOffer ->
+                    "Loading offer..."
+
+                FailedLoadingOffer ->
+                    "Failed to load offer."
+
+                NoSeatsAvailable ->
+                    "No seats are available."
+
+                PriceForSinglePerson ->
+                    "Price for a single person."
+
+                SmokingIsAllowed ->
+                    "Smoking is allowed."
+
+                SmokingIsNotAllowed ->
+                    "Smoking is not allowed."
+
+                PetsAreAllowed ->
+                    "Pets are allowed."
+
+                PetsAreNotAllowed ->
+                    "Pets are not allowed."
+
+                PassengersSubtitle ->
+                    "Passengers"
+
+                You ->
+                    "You"
+
+                DriverTagline ->
+                    "Driver"
+
+                ContactYourDriver ->
+                    "Contact your driver"
+
+                BeTheFirstPassenger ->
+                    "Be the first passenger."
+
+                ContactThePassenger ->
+                    "Contact the passenger"
+
+                Reserve ->
+                    "Reserve a seat"
+
+                Cancel ->
+                    "Cancel the reservation"
+
                 TripDuration ->
                     "Trip duration"
 
@@ -71,6 +245,9 @@ translate lang term =
                 -- MAIN
                 DefaultAppTitle ->
                     "Truć Kar"
+
+                Trademark ->
+                    "Truć Kar©"
 
                 Redirecting ->
                     "Učitavanje stranice..."
@@ -95,6 +272,128 @@ translate lang term =
                 FailedToLoadSuggestions ->
                     "Neuspešno učitavanje rasporeda."
 
+                -- LOGIN
+                Login ->
+                    "Prijavite se"
+
+                Email ->
+                    "Email"
+
+                Password ->
+                    "Šifra"
+
+                RegisterHere ->
+                    "Nemate nalog? Registrujte se ovde."
+
+                ResetPassword ->
+                    "Da li ste zaboravili Vašu šifru? Restartujte je ovde."
+
+                -- REGISTER
+                Register ->
+                    "Napravite novi profil"
+
+                FirstName ->
+                    "Ime"
+
+                LastName ->
+                    "Prezime"
+
+                Phone ->
+                    "Broj telefona"
+
+                Gender ->
+                    "Pol"
+
+                Male ->
+                    "Muški"
+
+                Female ->
+                    "Ženski"
+
+                Other ->
+                    "Drugo"
+
+                Day ->
+                    "Dan"
+
+                Month ->
+                    "Mesec"
+
+                Year ->
+                    "Godina"
+
+                CreateAccount ->
+                    "Napravite profil"
+
+                LoginHere ->
+                    "Već imate profil? Prijavite se ovde."
+
+                -- User
+                LoadingUser ->
+                    "Učitavanje profila korisnika..."
+
+                FailedToLoadUser ->
+                    "Neuspešno učitavanje profila korisnika..."
+
+                CompletedDrives count ->
+                    "Učestvovao u " ++ String.fromInt count ++ " vožnji."
+
+                MemberSince date ->
+                    "Član od " ++ date
+
+                -- NOT FOUND
+                TakeMeToHomePage ->
+                    "Odvedi me na početnu stranicu."
+
+                -- OFFER
+                LoadingOffer ->
+                    "Učitavanje ponude..."
+
+                FailedLoadingOffer ->
+                    "Učitavanje ponude nije uspelo."
+
+                NoSeatsAvailable ->
+                    "Nema slobodnih mesta."
+
+                PriceForSinglePerson ->
+                    "Cena vožnje za jednu osobu."
+
+                SmokingIsAllowed ->
+                    "Pušenje je dozvoljeno."
+
+                SmokingIsNotAllowed ->
+                    "Pušenje nije dozvoljeno."
+
+                PetsAreAllowed ->
+                    "Kućni ljubimci su dozvoljeni."
+
+                PetsAreNotAllowed ->
+                    "Kućni ljubimci nisu dozvoljeni."
+
+                PassengersSubtitle ->
+                    "Putnici"
+
+                You ->
+                    "Vi."
+
+                DriverTagline ->
+                    "Vozač"
+
+                ContactYourDriver ->
+                    "Kontaktirajte vozača"
+
+                BeTheFirstPassenger ->
+                    "Budite prvi putnik."
+
+                ContactThePassenger ->
+                    "Kontaktirajte putnika"
+
+                Reserve ->
+                    "Rezervišite vožnju"
+
+                Cancel ->
+                    "Otkažite rezervaciju"
+
                 TripDuration ->
                     "Dužina puta"
 
@@ -108,7 +407,7 @@ languageDecoder =
                     Just "en-US" ->
                         JD.succeed Eng
 
-                    Just "sr-RS" ->
+                    Just "sr-RS-Latin" ->
                         JD.succeed Srb
 
                     _ ->
@@ -134,7 +433,7 @@ languageToIdValue language =
             ( "en-US", "English" )
 
         Srb ->
-            ( "sr-RS", "Serbian" )
+            ( "sr-RS-Latin", "Serbian" )
 
 
 

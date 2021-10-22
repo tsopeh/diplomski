@@ -8,7 +8,7 @@ $search-header-height: 4rem;
   flex-direction: column;
 
   a {
-    color: black;
+    color: $primary-text-color;
     text-decoration: none;
   }
 
@@ -28,7 +28,7 @@ $search-header-height: 4rem;
     a {
       flex: 1 0 auto;
       display: flex;
-      color: black;
+      color: $primary-text-color;
       text-decoration: none;
       background-color: #ffffff;
       border-radius: 2rem;
@@ -94,7 +94,7 @@ $search-header-height: 4rem;
         align-items: center;
         column-gap: 0.5rem;
 
-        $pipeColor: #5b8ce3;
+        $pipeColor: $accent-color;
         $pipe-width: 0.3rem;
 
         .pin {
@@ -150,7 +150,7 @@ $search-header-height: 4rem;
 
         .length {
           grid-area: length;
-          color: #778899;
+          color: $secondary-text-color;
           font-size: 0.8rem;
           justify-self: end;
         }

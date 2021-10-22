@@ -17,18 +17,31 @@ type Route
     | Login
     | Logout
     | Register
+    | NotFound
 
 
 parser : UrlParser.Parser (Route -> a) a
 parser =
     UrlParser.oneOf
         [ UrlParser.map Home UrlParser.top
-        , UrlParser.map Suggestions (UrlParser.s "suggestions" </> (UrlParser.string |> UrlParser.map Location.stringToId) </> (UrlParser.string |> UrlParser.map Location.stringToId) </> UrlParser.int)
-        , UrlParser.map Offer (UrlParser.s "offer" </> (UrlParser.string |> UrlParser.map Suggestion.stringToId))
-        , UrlParser.map User (UrlParser.s "user" </> (UrlParser.string |> UrlParser.map User.stringToId))
+        , UrlParser.map Suggestions
+            (UrlParser.s "suggestions"
+                </> (UrlParser.string |> UrlParser.map Location.stringToId)
+                </> (UrlParser.string |> UrlParser.map Location.stringToId)
+                </> UrlParser.int
+            )
+        , UrlParser.map Offer
+            (UrlParser.s "offer"
+                </> (UrlParser.string |> UrlParser.map Suggestion.stringToId)
+            )
+        , UrlParser.map User
+            (UrlParser.s "user"
+                </> (UrlParser.string |> UrlParser.map User.stringToId)
+            )
         , UrlParser.map Login (UrlParser.s "login")
         , UrlParser.map Logout (UrlParser.s "logout")
         , UrlParser.map Register (UrlParser.s "register")
+        , UrlParser.map NotFound (UrlParser.s "not-found")
         ]
 
 
@@ -55,6 +68,9 @@ routeToString route =
 
         Register ->
             UrlBuilder.absolute [ "register" ] []
+
+        NotFound ->
+            UrlBuilder.absolute [ "not-found" ] []
 
 
 fromUrl : Url.Url -> Maybe Route

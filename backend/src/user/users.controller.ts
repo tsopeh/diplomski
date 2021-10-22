@@ -1,7 +1,8 @@
 import { HttpService } from '@nestjs/axios'
-import { Controller, Get, Param, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Req, UnauthorizedException } from '@nestjs/common'
+import { Request } from 'express'
 import { v4 as uuid } from 'uuid'
-import { LoginParams, PreviewUser, SignUpUser, User } from './user'
+import { LoggedInUser, LoginParams, PreviewUser, RegisterParams, SignUpUser, User, userToLoggedInUser } from './user'
 import { getDefaultUserAvatarPath, UsersService } from './users.service'
 
 @Controller('user')
@@ -12,8 +13,18 @@ export class UsersController {
     private readonly usersService: UsersService,
   ) {}
 
+  @Get('me')
+  getMyInfo (@Req() request: Request): LoggedInUser {
+    const userId = this.usersService.headersToAuthenticatedUserId(request.headers)
+    if (userId != null) {
+      return userToLoggedInUser(this.usersService.getUserById(userId)!)
+    } else {
+      throw new UnauthorizedException()
+    }
+  }
+
   @Get(':id')
-  offerRide (@Param('id') id: string): PreviewUser | null {
+  getPreviewUser (@Param('id') id: string): PreviewUser | null {
     return this.usersService.getPreviewUser(id)
   }
 
@@ -40,10 +51,27 @@ export class UsersController {
   }
 
   @Post('login')
-  login (x: LoginParams): { token: string } {
-    // TODO: validation
-    const userId = 'first user'
-    return this.usersService.getToken(userId)
+  login (@Body() body: LoginParams): { token: string } {
+    const user = this.usersService.getAllUsers().find(u => u.email == body.email && u.password == body.password)
+    if (user == null) {
+      throw new UnauthorizedException()
+    } else {
+      return this.usersService.getToken(user.id)
+    }
+  }
+
+  @Post('register')
+  register (@Body() body: RegisterParams): { token: string } {
+    const user: User = {
+      ...body,
+      id: uuid(),
+      avatar: getDefaultUserAvatarPath(),
+      passenger: [],
+      driver: [],
+      accountCreationDate: new Date().toISOString(),
+    }
+    this.usersService.storeUser(user)
+    return this.usersService.getToken(user.id)
   }
 
 }

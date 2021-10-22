@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { IncomingHttpHeaders } from 'http'
 import { v4 as uuid } from 'uuid'
 import { Gender, PreviewUser, User } from './user'
 
@@ -8,11 +9,11 @@ const MOCK_USERS: Array<User> = [
   {
     id: 'first user',
     password: 'pass',
-    firstName: 'John',
+    firstName: 'Bob',
     lastName: 'Doe',
     gender: Gender.Male,
     dateOfBirth: new Date().toISOString(),
-    email: 'john@example.com',
+    email: 'bob@example.com',
     phone: '12345678',
     driver: [],
     passenger: [],
@@ -112,6 +113,20 @@ export class UsersService {
     }
   }
 
+  public headersToAuthenticatedUserId (headers: IncomingHttpHeaders): string | null {
+    const token = extractTokenFromHeaders(headers)
+    return TOKENS.get(token ?? '') ?? null
+  }
+
+  public isAuthorized (headers: IncomingHttpHeaders): boolean {
+    return this.headersToAuthenticatedUserId(headers) != null
+  }
+
+}
+
+export function extractTokenFromHeaders (headers: IncomingHttpHeaders): string | null {
+  const token = headers['authorization']?.replace('Bearer ', '')
+  return token ?? null
 }
 
 export function getDefaultUserAvatarPath (): string {

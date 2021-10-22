@@ -1,0 +1,28 @@
+@import "../utils";
+@import "../theme";
+
+.not-found-page {
+
+  @include vertical(2rem);
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+
+  h1 {
+    margin-top: 3rem;
+    color: $primary-text-color;
+    font-size: 30vmin;
+    user-select: none;
+  }
+
+  a {
+    margin-top: 3rem;
+    font-size: min(1.4rem, 6vmin);
+    color: $primary-text-color;
+
+    &:hover {
+      color: $accent-color;
+    }
+  }
+
+}

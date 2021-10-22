@@ -2,13 +2,15 @@ module Page.Login exposing (..)
 
 import Api
 import Form as F
-import Html exposing (Html, a, button, div, form, h1, input, text)
-import Html.Attributes exposing (class, href, name, placeholder, type_, value)
-import Html.Events exposing (onInput, onSubmit)
+import Html exposing (Html, a, button, div, form, h1, text)
+import Html.Attributes exposing (class, href, type_)
+import Html.Events exposing (onSubmit)
 import Http
+import I18n
 import Route
 import State
 import Task exposing (Task)
+import User
 
 
 
@@ -44,7 +46,7 @@ update msg model =
             ( { model | password = password }, Cmd.none )
 
         Submit ->
-            ( model, Task.attempt GotToken <| Api.login { email = model.email, password = model.password } )
+            ( model, Task.attempt GotToken <| User.login { email = model.email, password = model.password } )
 
         GotToken res ->
             case res of
@@ -67,29 +69,35 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+    let
+        t =
+            State.toI18n model.state
+    in
     div [ class "login-page" ]
-        [ h1 [] [ {- i18n -} text "Log in" ]
+        [ h1 [] [ text <| t I18n.Login ]
         , form [ onSubmit Submit ]
             [ F.viewInput
                 { type_ = "email"
                 , name = "email"
-                , placeholder = {- i18n -} "E-mail"
-                , label = {- i18n -} "E-mail"
+                , placeholder = t I18n.Email
+                , label = t I18n.Email
                 , value = model.email
                 , onInput = EmailChanged
+                , shouldAutocomplete = True
                 }
             , F.viewInput
                 { type_ = "password"
                 , name = "password"
-                , placeholder = {- i18n -} "Password"
-                , label = {- i18n -} "Password"
+                , placeholder = t I18n.Password
+                , label = t I18n.Password
                 , value = model.password
                 , onInput = PasswordChanged
+                , shouldAutocomplete = True
                 }
-            , button [ type_ "submit" ] [ {- i18n -} text "Login" ]
+            , button [ type_ "submit" ] [ text <| t I18n.Login ]
             ]
-        , a [ class "alternative", href (Route.routeToString Route.Register) ] [ {- i18n -} text "Don't have an account? Register here." ]
-        , a [ class "alternative", href "" ] [ {- i18n -} text "Did you forget your password? Let's reset it." ]
+        , a [ class "alternative", href (Route.routeToString Route.Register) ] [ text <| t I18n.RegisterHere ]
+        , a [ class "alternative", href "" ] [ text <| t I18n.ResetPassword ]
         ]
 
 

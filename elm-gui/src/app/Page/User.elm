@@ -3,6 +3,7 @@ module Page.User exposing (..)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import Http
+import I18n
 import Image
 import State
 import Task
@@ -51,26 +52,26 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
+        t =
+            State.toI18n model.state
+
         content =
             case model.user of
                 Loading ->
-                    [ div [] [ {- i18n -} text "Loading user..." ] ]
+                    [ div [] [ text <| t I18n.LoadingUser ] ]
 
                 Failed ->
-                    [ div [] [ {- i18n -} text "Failed to load user." ] ]
+                    [ div [] [ text <| t I18n.FailedToLoadUser ] ]
 
                 Loaded user ->
                     let
-                        t =
-                            State.toI18n model.state
-
                         zone =
                             model.state.timeZone
                     in
                     [ div [ class "avatar" ] [ Image.avatarToImg user.avatar ]
                     , div [ class "name" ] [ text user.firstName ]
-                    , div [ class "info" ] [ {- i18n -} text <| "Completed " ++ String.fromInt (user.wasDriverCount + user.wasPassengerCount) ++ " drives." ]
-                    , div [ class "info" ] [ {- i18n -} text <| "Member since " ++ Utils.posixToDate zone user.memberFromDateTime ]
+                    , div [ class "info" ] [ text <| t <| I18n.CompletedDrives (user.wasDriverCount + user.wasPassengerCount) ]
+                    , div [ class "info" ] [ text <| t <| I18n.MemberSince <| Utils.posixToDate zone user.memberFromDateTime ]
                     ]
     in
     div [ class "user-page" ] content

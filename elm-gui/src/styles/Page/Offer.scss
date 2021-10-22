@@ -205,7 +205,6 @@ $hr-color: #ededed;
       color: $secondary-text-color;
       fill: $secondary-text-color
     }
-
   }
 
   .vehicle {
@@ -252,7 +251,65 @@ $hr-color: #ededed;
     }
   }
 
-  .confirmation {
+  .passenger {
+    margin: 1rem 0;
+    height: 4rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    @include horizontal(1rem);
+    justify-content: center;
+    align-items: center;
+
+    .name {
+      min-width: 7rem;
+      font-size: 1.5rem;
+      @include primaryText;
+    }
+
+    .contact {
+      flex: 1 1 auto;
+      @include horizontal(0.5rem);
+      @include secondaryText;
+      align-items: center;
+      cursor: pointer;
+
+      svg {
+        width: 2rem;
+        height: 2rem;
+        fill: $secondary-text-color;
+      }
+
+      &:hover {
+        color: $accent-color;
+
+        svg {
+          fill: $accent-color;
+        }
+      }
+    }
+
+    .profile {
+      @include horizontal(1rem);
+      justify-content: center;
+      align-items: center;
+
+      .avatar {
+        height: 3rem;
+        width: 3rem;
+        border-radius: 50%;
+      }
+
+      svg {
+        width: 3rem;
+        height: 3rem;
+        fill: $secondary-text-color;
+      }
+
+    }
+
+  }
+
+  .user-action {
     position: sticky;
     bottom: 0;
     height: 6rem;
@@ -265,12 +322,19 @@ $hr-color: #ededed;
     button {
       padding: 1rem;
       border-radius: 3rem;
-      background-color: $accent-color;
       outline: none;
       border-color: transparent;
       color: #ffffff;
       font-weight: bold;
       cursor: pointer;
+
+      &.confirm {
+        background-color: $accent-color;
+      }
+
+      &.cancel {
+        background-color: $red;
+      }
     }
   }
 

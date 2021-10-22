@@ -97,6 +97,11 @@ find get x list =
                     find get x rest
 
 
+emptyHtml : Html msg
+emptyHtml =
+    Html.text ""
+
+
 viewIf : Bool -> Html msg -> Html msg
 viewIf shouldRender html =
     case shouldRender of
@@ -104,7 +109,7 @@ viewIf shouldRender html =
             html
 
         False ->
-            Html.text ""
+            emptyHtml
 
 
 viewListIf : Bool -> List (Html msg) -> List (Html msg)

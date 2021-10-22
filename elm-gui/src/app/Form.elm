@@ -5,6 +5,11 @@ import Html.Attributes as HA
 import Html.Events as HE
 
 
+type Autocomplete
+    = On
+    | Off
+
+
 type alias InputConfig msg =
     { type_ : String
     , name : String
@@ -12,6 +17,7 @@ type alias InputConfig msg =
     , label : String
     , value : String
     , onInput : String -> msg
+    , shouldAutocomplete : Bool
     }
 
 
@@ -24,6 +30,7 @@ viewInput conf =
             , HA.name conf.name
             , HA.placeholder conf.placeholder
             , HA.value conf.value
+            , HA.autocomplete conf.shouldAutocomplete
             , HE.onInput conf.onInput
             ]
             []

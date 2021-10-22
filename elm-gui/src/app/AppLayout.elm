@@ -1,12 +1,13 @@
 module AppLayout exposing (..)
 
-import Html exposing (Html, a, div, footer, header, main_, option, select, text)
+import Html exposing (Html, a, div, footer, header, main_, option, select, span, text)
 import Html.Attributes exposing (class, href, selected, value)
 import Html.Events exposing (onInput)
 import I18n
 import Image
 import Route
 import State
+import Utils
 import Viewer
 
 
@@ -22,7 +23,7 @@ type Msg msg
 
 view : Model -> Html msg -> List (Html (Msg msg))
 view model content =
-    viewHeader model :: main_ [] [ Html.map GotFromContent content ] :: [ viewFooter model.state.language ]
+    viewHeader model :: main_ [] [ Html.map GotFromContent content ] :: [ viewFooter model model.state.language ]
 
 
 viewHeader : Model -> Html (Msg msg)
@@ -34,17 +35,32 @@ viewHeader model =
 
             else
                 Route.routeToString Route.Login
+
+        userInfo =
+            case Viewer.toFirstName model.state.viewer of
+                Nothing ->
+                    Utils.emptyHtml
+
+                Just username ->
+                    span [] [ text username ]
     in
     header []
         [ a [ class "logo", href <| Route.routeToString Route.Home ] []
-        , a [ class "avatar", href <| url ] [ Image.avatarToImg Image.guestAvatar ]
+        , a [ class "avatar", href <| url ]
+            [ Image.avatarToImg (Viewer.toAvatar model.state.viewer)
+            , userInfo
+            ]
         ]
 
 
-viewFooter : I18n.Language -> Html (Msg msg)
-viewFooter language =
+viewFooter : Model -> I18n.Language -> Html (Msg msg)
+viewFooter model language =
+    let
+        t =
+            State.toI18n model.state
+    in
     footer []
-        [ div [] [ text "TruchCar©" ]
+        [ div [] [ text <| t I18n.Trademark ]
         , select [ class "select-lang", onInput LanguageChanged ] <|
             List.map
                 (\( id, name ) ->

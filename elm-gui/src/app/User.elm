@@ -1,11 +1,12 @@
 module User exposing (..)
 
-import Api
+import Api exposing (Token)
 import Http
 import Image
 import Iso8601
 import Json.Decode as JD
 import Json.Decode.Pipeline as JDP
+import Json.Encode as JE
 import Task exposing (Task)
 import Time
 import Viewer
@@ -42,6 +43,19 @@ type Gender
     | Other
 
 
+genderToString : Gender -> String
+genderToString gender =
+    case gender of
+        Male ->
+            "male"
+
+        Female ->
+            "female"
+
+        Other ->
+            "other"
+
+
 decoder : JD.Decoder Model
 decoder =
     JD.succeed Model
@@ -63,4 +77,90 @@ getUser viewer id =
         , body = Http.emptyBody
         , timeout = Nothing
         , resolver = Http.stringResolver <| Api.handleJsonResponse <| decoder
+        }
+
+
+login : { email : String, password : String } -> Task Http.Error Token
+login { email, password } =
+    let
+        body : Http.Body
+        body =
+            Http.jsonBody <|
+                JE.object
+                    [ ( "email", JE.string email )
+                    , ( "password", JE.string password )
+                    ]
+    in
+    Http.task
+        { method = "POST"
+        , url = Api.getApiUrl [ "user", "login" ] []
+        , headers = []
+        , body = body
+        , timeout = Nothing
+        , resolver =
+            Http.stringResolver <|
+                Api.handleJsonResponse <|
+                    JD.field "token" Api.decodeToken
+        }
+
+
+type alias RegisterUser =
+    { firstName : String
+    , lastName : String
+    , gender : Maybe Gender
+    , dateOfBirth :
+        { day : Maybe Int
+        , month : Maybe Int
+        , year : Maybe Int
+        }
+    , phone : String
+    , email : String
+    , password : String
+    }
+
+
+dateOfBirthToIsoString : { day : Maybe Int, month : Maybe Int, year : Maybe Int } -> String
+dateOfBirthToIsoString maybeDate =
+    let
+        day =
+            maybeDate.day |> Maybe.withDefault 1
+
+        month =
+            maybeDate.day |> Maybe.withDefault 0
+
+        year =
+            maybeDate.year |> Maybe.withDefault 1900
+
+        posix =
+            Time.millisToPosix 0
+    in
+    Iso8601.fromTime posix
+
+
+register : RegisterUser -> Task Http.Error Token
+register registerUser =
+    let
+        body : Http.Body
+        body =
+            Http.jsonBody <|
+                JE.object
+                    [ ( "email", JE.string registerUser.email )
+                    , ( "password", JE.string registerUser.password )
+                    , ( "firstName", JE.string registerUser.firstName )
+                    , ( "lastName", JE.string registerUser.lastName )
+                    , ( "gender", JE.string <| genderToString (Maybe.withDefault Other registerUser.gender) )
+                    , ( "phone", JE.string registerUser.phone )
+                    , ( "dateOfBirth", JE.string (dateOfBirthToIsoString registerUser.dateOfBirth) )
+                    ]
+    in
+    Http.task
+        { method = "POST"
+        , url = Api.getApiUrl [ "user", "register" ] []
+        , headers = []
+        , body = body
+        , timeout = Nothing
+        , resolver =
+            Http.stringResolver <|
+                Api.handleJsonResponse <|
+                    JD.field "token" Api.decodeToken
         }

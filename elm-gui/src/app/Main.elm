@@ -5,12 +5,13 @@ import AppLayout
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Html
+import Http
 import I18n
-import Image
 import Json.Decode as JD
 import Json.Encode as JE
 import Page.Home as Home
 import Page.Login as Login
+import Page.NotFound as NotFound
 import Page.Offer as Offer
 import Page.Register as Register
 import Page.Suggestions as Suggestions
@@ -25,7 +26,6 @@ import Viewer
 
 
 {- TODO:
-   - 404 page
    - Create offer page (from driver's perspective)
    - Preview all associated drives from the Passenger's perspective and from
      the Driver's perspective
@@ -43,6 +43,7 @@ type Model
     | User User.Model
     | Login Login.Model
     | Register Register.Model
+    | NotFound NotFound.Model
 
 
 toState : Model -> State.Model
@@ -69,6 +70,9 @@ toState model =
         Register register ->
             register.state
 
+        NotFound notFound ->
+            notFound.state
+
 
 updateState : Model -> State.Model -> Model
 updateState model state =
@@ -94,6 +98,9 @@ updateState model state =
         Register register ->
             Register <| { register | state = state }
 
+        NotFound notFound ->
+            NotFound <| { notFound | state = state }
+
 
 
 -- UPDATE
@@ -105,6 +112,7 @@ type Msg
     | LanguageChanged I18n.Language
     | GotToken (Maybe Api.Token)
     | GotHereZone Time.Zone
+    | GotViewerMsg Viewer.Msg
     | GotFromAppLayout (AppLayout.Msg Msg)
     | GotHomeMsg Home.Msg
     | GotSuggestionMsg Suggestions.Msg
@@ -112,6 +120,7 @@ type Msg
     | GotUserMsg User.Msg
     | GotLoginMsg Login.Msg
     | GotRegisterMsg Register.Msg
+    | GotNotFoundMsg NotFound.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -152,6 +161,68 @@ update mainMsg mainModel =
             in
             ( updated, Cmd.none )
 
+        ( GotToken maybeToken, _ ) ->
+            let
+                state =
+                    toState mainModel
+
+                ( updatedViewer, viewerCmd ) =
+                    Viewer.initViewer maybeToken
+
+                updatedState =
+                    { state | viewer = updatedViewer }
+
+                route =
+                    if Viewer.isAuthenticated updatedState.viewer then
+                        case updatedState.lastRoute of
+                            Nothing ->
+                                Route.Home
+
+                            Just lastRoute ->
+                                lastRoute
+
+                    else
+                        Route.Login
+            in
+            ( Redirect updatedState, Cmd.batch [ Route.navTo updatedState.navKey route, Cmd.map GotViewerMsg viewerCmd ] )
+
+        ( GotViewerMsg viewerMsg, _ ) ->
+            case viewerMsg of
+                Viewer.GotLoggedInUserData res ->
+                    case res of
+                        Ok userData ->
+                            case Viewer.toToken (toState mainModel).viewer of
+                                Just token ->
+                                    let
+                                        state =
+                                            toState mainModel
+
+                                        viewer =
+                                            Viewer.createWithDataAndToken userData token
+
+                                        updatedState =
+                                            { state | viewer = viewer }
+
+                                        updatedModel =
+                                            updateState mainModel updatedState
+                                    in
+                                    ( updatedModel, Cmd.none )
+
+                                Nothing ->
+                                    ( mainModel, Cmd.none )
+
+                        Err err ->
+                            let
+                                _ =
+                                    Debug.log "Failed to retrieve logged-in user data" err
+                            in
+                            case err of
+                                Http.BadStatus 401 ->
+                                    ( mainModel, Route.navToWithoutHistory (toState mainModel).navKey Route.Logout )
+
+                                _ ->
+                                    ( mainModel, Cmd.none )
+
         ( GotFromAppLayout msg, _ ) ->
             case msg of
                 AppLayout.GotFromContent contentMsg ->
@@ -159,16 +230,6 @@ update mainMsg mainModel =
 
                 AppLayout.LanguageChanged languageStringId ->
                     ( mainModel, I18n.persistLanguage languageStringId )
-
-        ( GotToken maybeToken, _ ) ->
-            let
-                state =
-                    toState mainModel
-
-                updatedModel =
-                    updateState mainModel { state | viewer = Viewer.createViewer Image.guestAvatar maybeToken }
-            in
-            ( updatedModel, Route.navTo state.navKey Route.Home )
 
         ( GotHomeMsg msg, Home model ) ->
             let
@@ -212,6 +273,13 @@ update mainMsg mainModel =
             in
             ( Register updatedModel, Cmd.map GotRegisterMsg cmd )
 
+        ( GotNotFoundMsg notFoundMsg, NotFound notFoundModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    NotFound.update notFoundMsg notFoundModel
+            in
+            ( NotFound updatedModel, Cmd.map GotNotFoundMsg cmd )
+
         ( _, _ ) ->
             let
                 _ =
@@ -223,12 +291,27 @@ update mainMsg mainModel =
 changeModelTo : Maybe Route -> Model -> ( Model, Cmd Msg )
 changeModelTo maybeRoute mainModel =
     let
-        state =
+        stateBeforeUpdate =
             toState mainModel
+
+        state =
+            { stateBeforeUpdate
+                | lastRoute =
+                    if
+                        (maybeRoute == Just Route.Login)
+                            || (maybeRoute == Just Route.Logout)
+                            || (maybeRoute == Just Route.Register)
+                            || (maybeRoute == Just Route.NotFound)
+                    then
+                        stateBeforeUpdate.lastRoute
+
+                    else
+                        maybeRoute
+            }
     in
     case maybeRoute of
         Nothing ->
-            ( mainModel, Route.navTo state.navKey Route.Home )
+            mapInit NotFound GotNotFoundMsg <| NotFound.init state
 
         Just Route.Home ->
             mapInit Home GotHomeMsg <| Home.init state
@@ -251,6 +334,9 @@ changeModelTo maybeRoute mainModel =
         Just Route.Register ->
             mapInit Register GotRegisterMsg <| Register.init state
 
+        Just Route.NotFound ->
+            mapInit NotFound GotNotFoundMsg <| NotFound.init state
+
 
 mapInit : (subModel -> Model) -> (msg -> Msg) -> ( subModel, Cmd msg ) -> ( Model, Cmd Msg )
 mapInit mapModel mapMsg ( subModel, cmd ) =
@@ -264,11 +350,14 @@ mapInit mapModel mapMsg ( subModel, cmd ) =
 view : Model -> Browser.Document Msg
 view mainModel =
     let
+        t =
+            State.toI18n (toState mainModel)
+
         content : Html.Html Msg
         content =
             case mainModel of
                 Redirect _ ->
-                    Html.div [] [ Html.text "Redirecting..." ]
+                    Html.div [] [ Html.text <| t I18n.Redirecting ]
 
                 Home homeModel ->
                     Html.map GotHomeMsg <| Home.view homeModel
@@ -288,10 +377,13 @@ view mainModel =
                 Register registerModel ->
                     Html.map GotRegisterMsg <| Register.view registerModel
 
+                NotFound notFoundModel ->
+                    Html.map GotNotFoundMsg <| NotFound.view notFoundModel
+
         body =
             List.map (Html.map GotFromAppLayout) (AppLayout.view (AppLayout.init (toState mainModel)) content)
     in
-    { title = "Title"
+    { title = t I18n.DefaultAppTitle
     , body = body
     }
 
@@ -347,23 +439,25 @@ init flags url key =
                     in
                     I18n.Eng
 
-        maybeToken =
-            JD.decodeValue (JD.field "token" Api.decodeToken) flags |> Result.toMaybe
+        ( viewer, viewerCmd ) =
+            Viewer.initViewer (JD.decodeValue (JD.field "token" Api.decodeToken) flags |> Result.toMaybe)
 
-        viewer : State.Model
-        viewer =
-            { viewer = Viewer.createViewer Image.guestAvatar maybeToken
+        state : State.Model
+        state =
+            { viewer = viewer
             , navKey = key
             , timeZone = Time.utc
             , language = language
+            , lastRoute = Nothing
             }
 
         ( model, cmd ) =
-            changeModelTo (Route.fromUrl url) <| Redirect viewer
+            changeModelTo (Route.fromUrl url) <| Redirect state
     in
     ( model
     , Cmd.batch
         [ Task.perform GotHereZone Time.here
+        , Cmd.map GotViewerMsg viewerCmd
         , cmd
         ]
     )

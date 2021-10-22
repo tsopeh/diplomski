@@ -1,6 +1,7 @@
 export enum Gender {
   Male = 'male',
-  Female = 'female'
+  Female = 'female',
+  Other = 'other',
 }
 
 export interface User {
@@ -43,22 +44,36 @@ export interface LoginParams {
   password: string
 }
 
+export interface RegisterParams {
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  gender: Gender
+  dateOfBirth: string
+  phone: string
+}
+
 export interface LoggedInUser {
+  id: string
   firstName: string
   lastName: string
   gender: Gender
   dateOfBirth: string
   email: string
   phone: string
+  avatar: string
 }
 
 export function userToLoggedInUser (user: User): LoggedInUser {
   return {
+    id: user.id,
     firstName: user.firstName,
     lastName: user.lastName,
     gender: user.gender,
     dateOfBirth: user.dateOfBirth,
     email: user.email,
     phone: user.phone,
+    avatar: user.avatar
   }
 }

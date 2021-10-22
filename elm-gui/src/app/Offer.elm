@@ -44,6 +44,7 @@ type alias Passenger =
     { id : String
     , firstName : String
     , avatar : Image.Avatar
+    , contact : Maybe String
     }
 
 
@@ -77,6 +78,7 @@ passengerDecoder =
         |> JDP.required "id" JD.string
         |> JDP.required "firstName" JD.string
         |> JDP.required "avatar" Image.decoder
+        |> JDP.optional "contact" (JD.maybe JD.string) Nothing
 
 
 driverDecoder : JD.Decoder Driver
@@ -93,6 +95,18 @@ getOffer : Viewer.Model -> SuggestionId -> Task Http.Error Model
 getOffer viewer id =
     Http.task
         { method = "GET"
+        , url = Api.getApiUrl [ "rides", "offer", Suggestion.idToString id ] []
+        , headers = Api.createRequestHeaders (Viewer.toToken viewer)
+        , body = Http.emptyBody
+        , timeout = Nothing
+        , resolver = Http.stringResolver <| handleJsonResponse <| decoder
+        }
+
+
+postToggleOffer : Viewer.Model -> SuggestionId -> Task Http.Error Model
+postToggleOffer viewer id =
+    Http.task
+        { method = "POST"
         , url = Api.getApiUrl [ "rides", "offer", Suggestion.idToString id ] []
         , headers = Api.createRequestHeaders (Viewer.toToken viewer)
         , body = Http.emptyBody

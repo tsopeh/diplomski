@@ -1,9 +1,8 @@
-port module Api exposing (Token, createRequestHeaders, decodeToken, getApiUrl, handleJsonResponse, login, logout, persistToken, tokenChanged, tokenToString)
+port module Api exposing (Token, createRequestHeaders, decodeToken, getApiUrl, handleJsonResponse, logout, persistToken, tokenChanged, tokenToString)
 
 import Http exposing (Header)
 import Json.Decode as JD exposing (Decoder)
 import Json.Encode as JE
-import Task exposing (Task)
 import Url.Builder exposing (QueryParameter)
 
 
@@ -21,30 +20,6 @@ decodeToken =
     JD.string |> JD.map Token
 
 
-login : { email : String, password : String } -> Task Http.Error Token
-login { email, password } =
-    let
-        body : Http.Body
-        body =
-            Http.jsonBody <|
-                JE.object
-                    [ ( "email", JE.string email )
-                    , ( "password", JE.string password )
-                    ]
-    in
-    Http.task
-        { method = "POST"
-        , url = getApiUrl [ "user", "login" ] []
-        , headers = []
-        , body = body
-        , timeout = Nothing
-        , resolver =
-            Http.stringResolver <|
-                handleJsonResponse <|
-                    JD.field "token" decodeToken
-        }
-
-
 getApiUrl : List String -> List QueryParameter -> String
 getApiUrl path queryParams =
     "http://localhost:8080" ++ Url.Builder.absolute path queryParams
@@ -53,8 +28,8 @@ getApiUrl path queryParams =
 createRequestHeaders : Maybe Token -> List Header
 createRequestHeaders maybeToken =
     case maybeToken of
-        Just token ->
-            []
+        Just (Token token) ->
+            [ Http.header "authorization" ("Bearer " ++ token) ]
 
         Nothing ->
             []

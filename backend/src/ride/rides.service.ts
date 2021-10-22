@@ -4,7 +4,7 @@ import { LocationsService } from '../location/locations.service'
 import { UsersService } from '../user/users.service'
 import { Offer, Passenger, Ride, Suggestion } from './ride'
 
-const MOCK_DEPARTURE_DATE = DateFns.addDays(new Date(), 1)
+const MOCK_DEPARTURE_DATE = DateFns.addDays(new Date(), 2)
 
 const MOCK_RIDES: Array<Ride> = [
   {
@@ -18,7 +18,7 @@ const MOCK_RIDES: Array<Ride> = [
     numberOfSeats: 2,
     passengers: ['fifth user', 'second user'],
     departureDate: MOCK_DEPARTURE_DATE.toISOString(),
-    arrivalDate: DateFns.addHours(MOCK_DEPARTURE_DATE, 3).toISOString(),
+    arrivalDate: DateFns.addMinutes(DateFns.addHours(MOCK_DEPARTURE_DATE, 2), 30).toISOString(),
     startLocation: 'Niš',
     finishLocation: 'Beograd',
     price: 600,
@@ -37,9 +37,9 @@ const MOCK_RIDES: Array<Ride> = [
     numberOfSeats: 3,
     passengers: [],
     departureDate: MOCK_DEPARTURE_DATE.toISOString(),
-    arrivalDate: DateFns.addHours(MOCK_DEPARTURE_DATE, 2).toISOString(),
-    startLocation: 'Beograd',
-    finishLocation: 'Novi Sad',
+    arrivalDate: DateFns.addHours(MOCK_DEPARTURE_DATE, 3).toISOString(),
+    startLocation: 'Niš',
+    finishLocation: 'Beograd',
     price: 500,
     smokingAllowed: false,
     petsAllowed: true,
@@ -122,6 +122,20 @@ export class RidesService {
       petsAllowed: ride.petsAllowed,
       childrenAllowed: ride.childrenAllowed,
     }
+  }
+
+  toggleOffer (rideId: string, userId: string): Offer | null {
+    const ride = this.getRide(rideId)
+    const user = this.usersService.getUserById(userId)
+    if (ride == null || user == null) return null
+    if (ride.passengers.includes(userId)) {
+      ride.passengers = ride.passengers.filter(passengerId => passengerId != userId)
+      user.passenger = user.passenger.filter(id => id != rideId)
+    } else {
+      ride.passengers.push(userId)
+      user.passenger.push(rideId)
+    }
+    return this.getOffer(rideId)
   }
 }
 

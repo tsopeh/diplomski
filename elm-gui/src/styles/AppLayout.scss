@@ -53,11 +53,12 @@ header {
   }
 
   .avatar {
-    width: 5rem;
     margin-left: auto;
-    display: flex;
+    @include horizontal(0.5rem);
     align-items: center;
     text-decoration: none;
+    color: $primary-text-color;
+    font-weight: bold;
 
     img {
       width: 3rem;

@@ -244,7 +244,7 @@ init state =
     )
 
 
-initForm : I18n.TransFn -> FormModel
+initForm : I18n.TranslationFn -> FormModel
 initForm t =
     { startSelect =
         { search = ""
@@ -309,11 +309,20 @@ updateFormModelWithFormPersistenceModel formModel formPersistenceModel =
 
         arrivalSearchSelect =
             formModel.finishSelect
+
+        dateTime =
+            formModel.departureDateTime
     in
     { formModel
         | startSelect = { departureSearchSelect | selectedOption = formPersistenceModel.departureStationId }
         , finishSelect = { arrivalSearchSelect | selectedOption = formPersistenceModel.arrivalStationId }
-        , departureDateTime = Time.millisToPosix formPersistenceModel.departureDateTime
+        , departureDateTime =
+            case Time.posixToMillis dateTime > formPersistenceModel.departureDateTime of
+                True ->
+                    dateTime
+
+                False ->
+                    Time.millisToPosix formPersistenceModel.departureDateTime
     }
 
 

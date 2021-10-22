@@ -3,9 +3,10 @@ module Page.Register exposing (..)
 import Api
 import Form as F
 import Html exposing (Html, a, button, div, form, h1, option, select, text)
-import Html.Attributes exposing (class, disabled, hidden, href, name, placeholder, type_, value)
+import Html.Attributes exposing (class, hidden, href, name, placeholder, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 import Http
+import I18n
 import Route
 import State
 import Task exposing (Task)
@@ -18,17 +19,7 @@ import User
 
 type alias Model =
     { state : State.Model
-    , firstName : String
-    , lastName : String
-    , gender : Maybe User.Gender
-    , dateOfBirth :
-        { day : Maybe Int
-        , month : Maybe Int
-        , year : Maybe Int
-        }
-    , phone : String
-    , email : String
-    , password : String
+    , form : User.RegisterUser
     , problems : List String
     }
 
@@ -52,54 +43,54 @@ type Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ form } as model) =
     case msg of
         FirstNameChanged firstName ->
-            ( { model | firstName = firstName }, Cmd.none )
+            ( { model | form = { form | firstName = firstName } }, Cmd.none )
 
         LastNameChanged lastName ->
-            ( { model | lastName = lastName }, Cmd.none )
+            ( { model | form = { form | lastName = lastName } }, Cmd.none )
 
         GenderChanged gender ->
-            ( { model | gender = Just gender }, Cmd.none )
+            ( { model | form = { form | gender = Just gender } }, Cmd.none )
 
         DayChanged day ->
             let
                 dateOfBirth =
-                    model.dateOfBirth
+                    form.dateOfBirth
             in
-            ( { model | dateOfBirth = { dateOfBirth | day = Just day } }, Cmd.none )
+            ( { model | form = { form | dateOfBirth = { dateOfBirth | day = Just day } } }, Cmd.none )
 
         MonthChanged month ->
             let
                 dateOfBirth =
-                    model.dateOfBirth
+                    form.dateOfBirth
             in
-            ( { model | dateOfBirth = { dateOfBirth | month = Just month } }, Cmd.none )
+            ( { model | form = { form | dateOfBirth = { dateOfBirth | month = Just month } } }, Cmd.none )
 
         YearChanged year ->
             let
                 dateOfBirth =
-                    model.dateOfBirth
+                    form.dateOfBirth
             in
-            ( { model | dateOfBirth = { dateOfBirth | year = Just year } }, Cmd.none )
+            ( { model | form = { form | dateOfBirth = { dateOfBirth | year = Just year } } }, Cmd.none )
 
         PhoneChanged phone ->
-            ( { model | phone = phone }, Cmd.none )
+            ( { model | form = { form | phone = phone } }, Cmd.none )
 
         EmailChanged email ->
-            ( { model | email = email }, Cmd.none )
+            ( { model | form = { form | email = email } }, Cmd.none )
 
         PasswordChanged password ->
-            ( { model | password = password }, Cmd.none )
+            ( { model | form = { form | password = password } }, Cmd.none )
 
         Submit ->
-            ( model, Task.attempt GotToken <| Api.login { email = model.email, password = model.password } )
+            ( model, Task.attempt GotToken <| User.register form )
 
         GotToken res ->
             case res of
                 Ok token ->
-                    ( model, Route.navTo model.state.navKey Route.Login )
+                    ( model, Api.persistToken (Just <| Api.tokenToString token) )
 
                 Err err ->
                     case err of
@@ -117,68 +108,77 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+    let
+        t =
+            State.toI18n model.state
+    in
     div [ class "register-page" ]
-        [ h1 [] [ {- i18n -} text "Create a new account" ]
+        [ h1 [] [ text <| t I18n.Register ]
         , form [ onSubmit Submit ]
             [ F.viewInput
                 { type_ = "text"
                 , name = "firstName"
-                , placeholder = {- i18n -} "First name"
-                , label = {- i18n -} "First name"
-                , value = model.firstName
+                , placeholder = t I18n.FirstName
+                , label = t I18n.FirstName
+                , value = model.form.firstName
                 , onInput = FirstNameChanged
+                , shouldAutocomplete = False
                 }
             , F.viewInput
                 { type_ = "text"
                 , name = "lastName"
-                , placeholder = {- i18n -} "Last name"
-                , label = {- i18n -} "Last name"
-                , value = model.lastName
+                , placeholder = t I18n.LastName
+                , label = t I18n.LastName
+                , value = model.form.lastName
                 , onInput = LastNameChanged
+                , shouldAutocomplete = False
                 }
-            , viewGender model.gender
-            , viewDateOfBirth model
+            , viewGender t model.form.gender
+            , viewDateOfBirth t model
             , F.viewInput
                 { type_ = "text"
                 , name = "phone"
-                , placeholder = {- i18n -} "Phone number"
-                , label = {- i18n -} "Phone number"
-                , value = model.phone
+                , placeholder = t I18n.Phone
+                , label = t I18n.Phone
+                , value = model.form.phone
                 , onInput = PhoneChanged
+                , shouldAutocomplete = False
                 }
             , F.viewInput
                 { type_ = "email"
                 , name = "email"
-                , placeholder = {- i18n -} "E-mail"
-                , label = {- i18n -} "E-mail"
-                , value = model.email
+                , placeholder = t I18n.Email
+                , label = t I18n.Email
+                , value = model.form.email
                 , onInput = EmailChanged
+                , shouldAutocomplete = False
                 }
             , F.viewInput
                 { type_ = "password"
                 , name = "password"
-                , placeholder = {- i18n -} "Password"
-                , label = {- i18n -} "Password"
-                , value = model.password
+                , placeholder = t I18n.Password
+                , label = t I18n.Password
+                , value = model.form.password
                 , onInput = PasswordChanged
+                , shouldAutocomplete = False
                 }
-            , button [ type_ "submit", disabled True ] [ {- i18n -} text "Create account" ]
+            , button [ type_ "submit" ] [ text <| t I18n.CreateAccount ]
             ]
-        , a [ class "alternative", href (Route.routeToString Route.Login) ] [ {- i18n -} text "Already have an account? Log in here." ]
-        , a [ class "alternative", href "" ] [ {- i18n -} text "Did you forget your password? Let's reset it." ]
+        , a [ class "alternative", href (Route.routeToString Route.Login) ] [ text <| t I18n.LoginHere ]
+        , a [ class "alternative", href "" ] [ text <| t I18n.ResetPassword ]
         ]
 
 
-viewGender : Maybe User.Gender -> Html Msg
-viewGender maybeGender =
+viewGender : I18n.TranslationFn -> Maybe User.Gender -> Html Msg
+viewGender t maybeGender =
     F.viewSelect
         { name = "gender"
-        , placeholder = {- i18n -} "Gender"
-        , label = {- i18n -} "Gender"
+        , placeholder = t I18n.Gender
+        , label = t I18n.Gender
         , options =
-            [ ( "male", {- i18n -} "Male" )
-            , ( "female", {- i18n -} "Female" )
-            , ( "other", {- i18n -} "Other" )
+            [ ( User.genderToString User.Male, t I18n.Male )
+            , ( User.genderToString User.Female, t I18n.Female )
+            , ( User.genderToString User.Other, t I18n.Other )
             ]
         , selected =
             case maybeGender of
@@ -186,13 +186,13 @@ viewGender maybeGender =
                     Nothing
 
                 Just User.Male ->
-                    Just "male"
+                    Just <| User.genderToString User.Male
 
                 Just User.Female ->
-                    Just "female"
+                    Just <| User.genderToString User.Female
 
                 Just User.Other ->
-                    Just "other"
+                    Just <| User.genderToString User.Other
         , onInput =
             \str ->
                 case str of
@@ -207,8 +207,8 @@ viewGender maybeGender =
         }
 
 
-viewDateOfBirth : Model -> Html Msg
-viewDateOfBirth model =
+viewDateOfBirth : I18n.TranslationFn -> Model -> Html Msg
+viewDateOfBirth t model =
     let
         segmentChanged : (Int -> Msg) -> String -> Msg
         segmentChanged msg value =
@@ -224,7 +224,7 @@ viewDateOfBirth model =
             select [ name name_, onInput <| segmentChanged msg ]
                 (option
                     [ hidden True, value "" ]
-                    [ {- i18n -} text placeholder ]
+                    [ text placeholder ]
                     :: List.map
                         (\x ->
                             option [ value <| String.fromInt x ] [ text <| String.fromInt x ]
@@ -233,9 +233,9 @@ viewDateOfBirth model =
                 )
     in
     div [ class "date-of-birth" ]
-        [ viewSelect DayChanged "day" "Day" (List.range 1 31)
-        , viewSelect MonthChanged "month" "Month" (List.range 1 12)
-        , viewSelect YearChanged "year" "Year" (List.range 1900 2021 |> List.reverse)
+        [ viewSelect DayChanged "day" (t I18n.Day) (List.range 1 31)
+        , viewSelect MonthChanged "month" (t I18n.Month) (List.range 1 12)
+        , viewSelect YearChanged "year" (t I18n.Year) (List.range 1900 2021 |> List.reverse)
         ]
 
 
@@ -246,17 +246,19 @@ viewDateOfBirth model =
 init : State.Model -> ( Model, Cmd Msg )
 init state =
     ( { state = state
-      , firstName = ""
-      , lastName = ""
-      , gender = Nothing
-      , dateOfBirth =
-            { day = Nothing
-            , month = Nothing
-            , year = Nothing
+      , form =
+            { firstName = ""
+            , lastName = ""
+            , gender = Nothing
+            , dateOfBirth =
+                { day = Nothing
+                , month = Nothing
+                , year = Nothing
+                }
+            , phone = ""
+            , email = ""
+            , password = ""
             }
-      , phone = ""
-      , email = ""
-      , password = ""
       , problems = []
       }
     , Cmd.none
